@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="StartSkin" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Image id="preview" source="startPreview_png" visible="false"/>
+	<e:Image source="start_background_png"/>
+	<e:Image source="start_logo_png" horizontalCenter="0" y="22"/>
+	<e:Group width="640" height="960">
+		<e:Component id="btn_start" skinName="MyButton" horizontalCenter="0" anchorOffsetX="143" anchorOffsetY="76" y="534"/>
+	</e:Group>
+</e:Skin>

@@ -1,0 +1,75 @@
+{
+	"groups": [
+		{
+			"keys": "button_json,about_background_png,sence_background_png,setting_background_png,settingscreen_json,start_background_png,start_logo_png,gamemenu_json,icon_json,startPreview_png,gamePreview_png,tile_json",
+			"name": "preload"
+		}
+	],
+	"resources": [
+		{
+			"name": "button_json",
+			"type": "sheet",
+			"url": "assets/gameScene/button.json",
+			"subkeys": "sound_normal,custom_down,custom_normal,icon_down,icon_normal,music_down,music_non_down,music_non_normal,music_normal,pause_down,pause_normal,play_down,play_normal,retry_down,retry_normal,retry2_down,retry2_normal,return_down,return_normal,setting_down,setting_normal,sound_down,sound_non_down,sound_non_normal"
+		},
+		{
+			"name": "about_background_png",
+			"type": "image",
+			"url": "assets/gameScene/about_background.png"
+		},
+		{
+			"name": "sence_background_png",
+			"type": "image",
+			"url": "assets/gameScene/sence_background.png"
+		},
+		{
+			"name": "setting_background_png",
+			"type": "image",
+			"url": "assets/gameScene/setting_background.png"
+		},
+		{
+			"name": "settingscreen_json",
+			"type": "sheet",
+			"url": "assets/gameScene/settingscreen.json",
+			"subkeys": "about_logo,about_logo2,howtoplay_1,howtoplay_2,howtoplay_3,howtoplay_4,howtoplay_next,howtoplay_prev,howtoplay_return"
+		},
+		{
+			"name": "start_background_png",
+			"type": "image",
+			"url": "assets/gameScene/start_background.png"
+		},
+		{
+			"name": "start_logo_png",
+			"type": "image",
+			"url": "assets/gameScene/start_logo.png"
+		},
+		{
+			"name": "gamemenu_json",
+			"type": "sheet",
+			"url": "assets/gameScene/gamemenu.json",
+			"subkeys": "highscroce,level_small_easy,level_small_normal,level_small_special,menubackground"
+		},
+		{
+			"name": "icon_json",
+			"type": "sheet",
+			"url": "assets/gameScene/icon.json",
+			"subkeys": "level_easy,level_normal,level_special,loading_logo,loading_logo2"
+		},
+		{
+			"name": "startPreview_png",
+			"type": "image",
+			"url": "assets/gameScene/startPreview.png"
+		},
+		{
+			"name": "gamePreview_png",
+			"type": "image",
+			"url": "assets/gameScene/gamePreview.png"
+		},
+		{
+			"name": "tile_json",
+			"type": "sheet",
+			"url": "assets/gameScene/tile.json",
+			"subkeys": "tile_water,tile_1,tile_2,tile_3,tile_4,tile_5,tile_6,tile_7,tile_8,tile_9,tile_10,tile_11,tile_shovel,tile_stone,tile_stone2"
+		}
+	]
+}

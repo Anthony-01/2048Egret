@@ -1,0 +1,13 @@
+{
+  "skins": {
+    "game.StartScene": "resource/skins/StartSkin.exml",
+    "game.GameView": "resource/skins/GameSkin.exml",
+    "myComponent.MyButton": "resource/skins/component/MyButton.exml"
+  },
+  "autoGenerateExmlsList": true,
+  "exmls": [
+    "resource/skins/StartSkin.exml",
+    "resource/skins/GameSkin.exml",
+    "resource/skins/component/MyButton.exml"
+  ]
+}
