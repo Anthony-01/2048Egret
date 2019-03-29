@@ -1,13 +1,15 @@
 {
-  "skins": {
-    "game.StartScene": "resource/skins/StartSkin.exml",
-    "game.GameView": "resource/skins/GameSkin.exml",
-    "myComponent.MyButton": "resource/skins/component/MyButton.exml"
-  },
-  "autoGenerateExmlsList": true,
-  "exmls": [
-    "resource/skins/StartSkin.exml",
-    "resource/skins/GameSkin.exml",
-    "resource/skins/component/MyButton.exml"
-  ]
+	"skins": {
+		"game.StartScene": "resource/skins/StartSkin.exml",
+		"game.GameView": "resource/skins/GameSkin.exml",
+		"myComponent.MyButton": "resource/skins/component/MyButton.exml"
+	},
+	"autoGenerateExmlsList": true,
+	"exmls": [
+		"resource/skins/component/MyButton.exml",
+		"resource/skins/GameSkin.exml",
+		"resource/skins/LoadingSkin.exml",
+		"resource/skins/StartSkin.exml"
+	],
+	"path": "resource/default.thm.json"
 }

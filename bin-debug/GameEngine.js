@@ -13,13 +13,8 @@ var game;
     var EActionType;
     (function (EActionType) {
         EActionType[EActionType["AK_GAME_BEGIN"] = 0] = "AK_GAME_BEGIN";
-        EActionType[EActionType["AK_DEAL_CARDS"] = 1] = "AK_DEAL_CARDS";
-        EActionType[EActionType["AK_FLOP_CARDS"] = 2] = "AK_FLOP_CARDS";
-        EActionType[EActionType["AK_PRIORITY_AM"] = 3] = "AK_PRIORITY_AM";
-        EActionType[EActionType["AK_OUT_CARDS"] = 4] = "AK_OUT_CARDS";
-        EActionType[EActionType["AK_PASS_AM"] = 5] = "AK_PASS_AM";
-        EActionType[EActionType["AK_GAME_OVER"] = 6] = "AK_GAME_OVER";
-        EActionType[EActionType["AK_POPUP_SHOW"] = 7] = "AK_POPUP_SHOW"; //界面缩放动画
+        EActionType[EActionType["AK_APPEAR_TILE"] = 1] = "AK_APPEAR_TILE";
+        EActionType[EActionType["AK_PIECE_MOVE"] = 2] = "AK_PIECE_MOVE";
     })(EActionType = game.EActionType || (game.EActionType = {}));
     var GameEngine = (function (_super) {
         __extends(GameEngine, _super);
@@ -59,10 +54,23 @@ var game;
         GameEngine.prototype.startGame = function () {
             manager.FrameManager.getInstance().replaceScene(this._gameView, true);
             //将开始游戏动作导入动作队列
+            //游戏开始动作
+            this.pushAction(EActionType.AK_GAME_BEGIN);
+            //生成随机棋子的动作
+            this.pushAction(EActionType.AK_APPEAR_TILE);
+        };
+        /**
+         * 添加游戏动作
+         * */
+        GameEngine.prototype.pushAction = function (kind, data) {
+            var myData = {};
+            if (data) {
+                myData = data;
+            }
             var action = {
                 bLock: false,
-                nKind: EActionType.AK_GAME_BEGIN,
-                data: {},
+                nKind: kind,
+                data: data,
                 start: Date.now()
             };
             this._actionList.push(action);
@@ -79,7 +87,7 @@ var game;
                 var now = Date.now();
                 var time = now - action.start;
                 console.log("持续时间:", time / 1000);
-                if (time > 7) {
+                if (time > 5000) {
                     this._actionList.splice(0, 1);
                     this.beginGameAction();
                 }
@@ -89,6 +97,14 @@ var game;
             switch (action.nKind) {
                 case EActionType.AK_GAME_BEGIN: {
                     this.startGameBegin(action);
+                    break;
+                }
+                case EActionType.AK_APPEAR_TILE: {
+                    this.startAppearTile(action);
+                    break;
+                }
+                case EActionType.AK_PIECE_MOVE: {
+                    this.startMoveTiles(action);
                     break;
                 }
             }
@@ -101,6 +117,10 @@ var game;
             switch (nkind) {
                 case EActionType.AK_GAME_BEGIN: {
                     this.finishGameBegin(action);
+                    break;
+                }
+                case EActionType.AK_PIECE_MOVE: {
+                    this.finishMoveTile(action);
                     break;
                 }
             }
@@ -120,6 +140,24 @@ var game;
         };
         GameEngine.prototype.finishGameBegin = function (action) {
             this._gameView && this._gameView.finishGameBegin(action.data);
+        };
+        GameEngine.prototype.startAppearTile = function (action) {
+            var _this = this;
+            var callBack = function () {
+                _this.removeGameAction(true);
+            };
+            this._gameView && this._gameView.startAppearTile(callBack);
+        };
+        GameEngine.prototype.startMoveTiles = function (action) {
+            var _this = this;
+            var callBack = function () {
+                _this.removeGameAction(true);
+                _this.pushAction(EActionType.AK_APPEAR_TILE);
+            };
+            this._gameView && this._gameView.startMoveTile(action.data, callBack);
+        };
+        GameEngine.prototype.finishMoveTile = function (action) {
+            this._gameView && this._gameView.finishMoveTile(action.data);
         };
         return GameEngine;
     }(model.GameModel));

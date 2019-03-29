@@ -17,11 +17,13 @@ const config: ResourceManagerConfig = {
             return {
                 outputDir,
                 commands: [
+                    // new TextureMergerPlugin({textureMergerRoot:['resource']}),
                     new CleanPlugin({ matchers: ["js", "resource"] }),
                     new CompilePlugin({ libraryType: "debug", defines: { DEBUG: true, RELEASE: false } }),
                     new ExmlPlugin('commonjs'), // 非 EUI 项目关闭此设置
                     new WxgamePlugin(),
-                    new ManifestPlugin({ output: 'manifest.js' })
+                    new ManifestPlugin({ output: 'manifest.js' }),
+                    // new CustomPlugin()
                 ]
             }
         }
@@ -36,9 +38,19 @@ const config: ResourceManagerConfig = {
                     new UglifyPlugin([{
                         sources: ["main.js"],
                         target: "main.min.js"
+                    },
+                    {// 需要被压缩的文件
+                        sources: [
+                            "libs/modules/egret/egret.js",
+                            "libs/modules/eui/eui.js",
+                            "libs/modules/assetsmanager/assetsmanager.js",
+                            "libs/modules/tween/tween.js",
+                        ], // 压缩后的文件
+                        target: "lib.min.js"
                     }
                     ]),
-                    new ManifestPlugin({ output: 'manifest.js' })
+                    new ManifestPlugin({ output: 'manifest.js' }),
+                    new CustomPlugin()
                 ]
             }
         }
