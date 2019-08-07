@@ -54,19 +54,20 @@ namespace manager {
                     if (timerInfo.target != target) {
                         console.log("定时器对象错误");
                         return false;
+                    } else {
+                        let timer = timerInfo.timer;
+
+                        let callBack = timerInfo.callBack;
+
+                        timer.removeEventListener(egret.TimerEvent.TIMER, callBack, target);
+
+                        timer.stop();
+                        timer = null;
+
+                        this._timerQueue.splice(n, 1);
+                        break;
                     }
                 }
-                let timer = timerInfo.timer;
-
-                let callBack = timerInfo.callBack;
-
-                timer.removeEventListener(egret.TimerEvent.TIMER, callBack, target);
-
-                timer.stop();
-                timer = null;
-
-                this._timerQueue.splice(n, 1);
-                break;
             }
             return true;
 

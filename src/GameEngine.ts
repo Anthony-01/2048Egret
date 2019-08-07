@@ -41,14 +41,15 @@ namespace game {
          * */
         private init() {
             // this.setGameView(new GameView());
-            this.m_StartScene = new StartScene();
-            this._gameView = new GameView();
+            // this.m_StartScene = new StartScene();
+            // this._gameView = new GameView();
         }
 
         /**
          * 初始化游戏,将开始界面替换进舞台
          * */
         initGame() {
+            this.m_StartScene = new StartScene();
             manager.FrameManager.getInstance().setCurrentScene(this.m_StartScene);
         }
 
@@ -56,12 +57,18 @@ namespace game {
          * 开始游戏
          * */
         startGame() {
-            manager.FrameManager.getInstance().replaceScene(this._gameView, true);
-            //将开始游戏动作导入动作队列
-            //游戏开始动作
-            this.pushAction(EActionType.AK_GAME_BEGIN);
-            //生成随机棋子的动作
-            this.pushAction(EActionType.AK_APPEAR_TILE);
+            this._gameView = new GameView();
+            //初始化
+            manager.FrameManager.getInstance().replaceScene(this._gameView, true).then(() => {
+                this.m_StartScene.dealloc();
+                this.m_StartScene = null;
+                //将开始游戏动作导入动作队列
+                //游戏开始动作
+                this.pushAction(EActionType.AK_GAME_BEGIN);
+                //生成随机棋子的动作
+                this.pushAction(EActionType.AK_APPEAR_TILE);
+            });
+
         }
 
         /**

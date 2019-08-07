@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<e:Skin class="MyButton" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
-	<e:Image id="btn_up" source="button_json.play_normal" scale9Grid="43,27,13,95" width="286"/>
-	<e:Image id="btn_down" source="button_json.play_down" scale9Grid="43,27,13,95" width="286" visible="false"/>
+<e:Skin class="MyButton" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing" states="up,down,disabled" >
+	<e:Image id="btn_bg" source.up="button_json.play_normal" scale9Grid="43,27,13,95" width="286" source.down="button_json.play_down"
+	 />
 	<e:Image id="btn_disabled"/>
 	<e:Label text="PLAY" verticalCenter="0" size="50" x="59" textColor="0x107ad1"/>
 </e:Skin>

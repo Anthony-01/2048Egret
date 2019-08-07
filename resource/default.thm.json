@@ -2,11 +2,19 @@
 	"skins": {
 		"game.StartScene": "resource/skins/StartSkin.exml",
 		"game.GameView": "resource/skins/GameSkin.exml",
-		"myComponent.MyButton": "resource/skins/component/MyButton.exml"
+		"myComponent.MyButton": "resource/skins/component/MyButton.exml",
+		"eui.Panel": "resource/skins/component/MyPanel.exml",
+		"eui.Button": "resource/skins/component/Button.exml",
+		"component.GameTimeHandle": "resource/skins/component/GameTimerSkin.exml",
+		"component.GridHandle": "resource/skins/component/GridSkin.exml"
 	},
 	"autoGenerateExmlsList": true,
 	"exmls": [
+		"resource/skins/component/Button.exml",
+		"resource/skins/component/GameTimerSkin.exml",
+		"resource/skins/component/GridSkin.exml",
 		"resource/skins/component/MyButton.exml",
+		"resource/skins/component/MyPanel.exml",
 		"resource/skins/GameSkin.exml",
 		"resource/skins/LoadingSkin.exml",
 		"resource/skins/StartSkin.exml"

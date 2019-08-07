@@ -1,7 +1,7 @@
 {
 	"groups": [
 		{
-			"keys": "button_json,about_background_png,sence_background_png,setting_background_png,settingscreen_json,start_background_png,start_logo_png,gamemenu_json,icon_json,startPreview_png,gamePreview_png,tile_json",
+			"keys": "button_json,about_background_png,sence_background_png,setting_background_png,settingscreen_json,start_background_png,start_logo_png,gamemenu_json,icon_json,startPreview_png,gamePreview_png,tile_json,border_png,header_png,button_down_png,button_up_png",
 			"name": "preload"
 		}
 	],
@@ -70,6 +70,26 @@
 			"type": "sheet",
 			"url": "assets/gameScene/tile.json",
 			"subkeys": "tile_water,tile_1,tile_2,tile_3,tile_4,tile_5,tile_6,tile_7,tile_8,tile_9,tile_10,tile_11,tile_shovel,tile_stone,tile_stone2"
+		},
+		{
+			"name": "border_png",
+			"type": "image",
+			"url": "assets/gameScene/border.png"
+		},
+		{
+			"name": "header_png",
+			"type": "image",
+			"url": "assets/gameScene/header.png"
+		},
+		{
+			"name": "button_down_png",
+			"type": "image",
+			"url": "assets/gameScene/button_down.png"
+		},
+		{
+			"name": "button_up_png",
+			"type": "image",
+			"url": "assets/gameScene/button_up.png"
 		}
 	]
 }

@@ -3,9 +3,9 @@ namespace game {
     export class Grid {
 
         public cells: any[];
-        private m_main: GameView;
+        private m_main: egret.DisplayObjectContainer;
 
-        constructor(main: GameView,grid?: number[][]) {
+        constructor(main: egret.DisplayObjectContainer, grid?: number[][]) {
             this.m_main = main;
             grid ? this.fromState(grid) : this.empty();
         }
@@ -99,14 +99,13 @@ namespace game {
         /**
          * 插入棋子
          * */
-        public insertTile(tile: Tile) {
-            this.cells[tile.Point.x][tile.Point.y] = tile;
-            this.m_main.addChild(tile);
+        public insertTile(x: number, y: number,tile: number) {
+            this.cells[x][y] = tile;
         }
 
-        public removeTile(tile: Tile) {
-            this.cells[tile.Point.x][tile.Point.y] = null;
-            this.m_main.removeChild(tile);
+        public removeTile(x, y) {
+            console.log(`移除${x + "," + y}`);
+            this.cells[x][y] = null;
         }
 
         public cellsAvailable() {
@@ -131,6 +130,14 @@ namespace game {
             if (cells.length) {
                 return cells[Math.floor(Math.random() * cells.length)];
             }
+        }
+
+        public moveTile(tile: any, cell: any) {
+            let temp = this.cells[tile.x][tile.y];
+            this.cells[tile.x][tile.y] = null;
+            this.cells[cell.x][cell.y] = temp;
+            // let newCell = new egret.Point(cell.x, cell.y);
+            // tile.updatePosition(newCell);
         }
     }
 }

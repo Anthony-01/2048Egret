@@ -16,17 +16,18 @@ namespace game {
 
     export const PIECE_WIDTH = 111;
 
-    const TILE_SOURCE = "tile_json";
 
     export class Tile extends base.BaseComponent {
         public _gameValue: GameValue;
+        private m_states = 0;
 
         constructor(x: number, y: number, value: GameValue) {
             super();
             this.point = new egret.Point(x, y);
-            this.wishPoint = null;
+            // this.wishPoint = this.Point;
             this.gameView = value;
-            this.drawPiece();
+            this.updatePosition();
+            // this.wishPoint = this.point;
         }
 
         private _backImage: eui.Image;
@@ -46,21 +47,20 @@ namespace game {
             return this._gameValue;
         }
 
-        private cachePoint: egret.Point;
+        private cachePoint: egret.Point;//当前棋子的位置
 
-        set point(point: egret.Point){
+        set point(point: egret.Point) {
             this.cachePoint = point;
-            this.x = this.Point.x * PIECE_WIDTH + 42;
-            this.y = this.Point.y * PIECE_WIDTH + 120;
+            // this.x = this.Point.x * PIECE_WIDTH + 42;
+            // this.y = this.Point.y * PIECE_WIDTH + 120;
         }
 
         get Point():egret.Point{
-            return this.cachePoint;
-        }
-
-        private drawPiece() {
-            // this.x = this.Point.x * PIECE_WIDTH + 42;
-            // this.y = this.Point.y * PIECE_WIDTH + 120;
+            // if (this._wishPoint) {
+            //     return this.wishPoint;
+            // } else {
+                return this.cachePoint;
+            // }
         }
 
         private _wishPoint: egret.Point;
@@ -83,26 +83,20 @@ namespace game {
             };
         }
 
-        private previousPosition: egret.Point;
-        public mergedFrom: any;//合并前的棋子信息
+        public previousPosition: egret.Point;
+        public mergedFrom: any = null;//合并前的棋子信息
         //保存移动之前的坐标并且设置mergedFrom为null
         public savePosition() {
             this.mergedFrom = null;
             this.previousPosition = this.cachePoint;
         }
 
-        public updatePosition(cell: egret.Point) {
-            this.point = cell;
+        public updatePosition() {
+            this.x = this.Point.y * PIECE_WIDTH;
+            this.y = this.Point.x * PIECE_WIDTH;
         }
 
-        public moveTo(position: any): egret.Tween {
-            let wish = {
-                x : position.x * PIECE_WIDTH + 42,
-                y : position.y * PIECE_WIDTH + 120
-            };
-            return egret.Tween.get(this).to(wish, 1000, egret.Ease.quartInOut).call(() => {
-                this.point = new egret.Point(position.x, position.y);
-            })
-        }
+
+        public m_readyToRemove:boolean = false;
     }
 }

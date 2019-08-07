@@ -43,6 +43,8 @@ namespace manager {
         public setCurrentScene(scene: base.BaseScene) {
             this.m_CurrentScene = null;
             this.m_CurrentScene = scene;
+            //将其余场景移除
+            this.m_MainStage.removeChildren();
             this.m_MainStage.addChild(scene);
         }
 
@@ -55,7 +57,7 @@ namespace manager {
         }
 
         //在切换场景时候将旧的场景销毁
-        public replaceScene(newScene: base.BaseScene, animation?: boolean) {
+        public replaceScene(newScene: base.BaseScene, animation?: boolean): Promise<any> {
             let curController = this.m_CurrentScene;
 
             if (this.m_CurrentScene == newScene) {
@@ -64,7 +66,7 @@ namespace manager {
             this.m_CurrentScene = null;
             this.m_CurrentScene = newScene;
 
-            if (animation) {
+            if (animation && curController) { //旧视图存在
                 //添加新视图
                 newScene.alpha = 0;
                 this.m_MainStage.addChild(newScene);
@@ -72,14 +74,29 @@ namespace manager {
                 //旧视图渐变成透明
                 let tw = egret.Tween.get(newScene);
                 let tw1 = egret.Tween.get(curController);
-                tw1.to({ "alpha": 0 }, 1000, egret.Ease.backOut);
+                let promiseVec = [];
+                promiseVec.push(new Promise((resolve, reject) => {
+                    tw1.to({ "alpha": 0 }, 1000, egret.Ease.backOut).call(() => {
+                        resolve();
+                    })
+                }));
 
-                tw.to({ "alpha": 1 }, 1000, egret.Ease.backIn);
-                this.m_MainStage.removeChild(curController);
+                promiseVec.push(new Promise((resolve, reject) => {
+                    tw.to({ "alpha": 1 }, 1000, egret.Ease.backIn).call(() => {
+                        resolve();
+                    })
+                }));
+
+                return Promise.all(promiseVec).then(() => {
+                    this.m_MainStage.removeChild(curController);
+                    return Promise.resolve();
+                });
+
 
             } else {
                 this.m_MainStage.addChild(newScene);
                 this.m_MainStage.removeChild(curController);
+                return Promise.resolve();
             }
         }
     }

@@ -1,11 +1,16 @@
 namespace game {
     export class GameView extends base.BaseScene{
 
+        public bg:eui.Image;
         public score:eui.Label;
         public btn_up:eui.Button;
         public btn_down:eui.Button;
         public btn_letf:eui.Button;
         public btn_right:eui.Button;
+        public gameTime:component.GameTimeHandle;
+        public gridHandle:component.GridHandle;
+
+
 
 
         constructor() {
@@ -21,6 +26,15 @@ namespace game {
             this.btn_down.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
             this.btn_letf.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
             this.btn_right.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+        }
+
+
+
+        /*
+        * 初始化组件
+        * */
+        init() {
+            console.log("gameView初始化!");
         }
 
         private onMove(e: egret.TouchEvent) {
@@ -51,20 +65,29 @@ namespace game {
          * @param data 游戏开始数据
          * */
         public startGameBegin(data: any, callBack?: Function) {
-
             this.initTable();
+            this.gridHandle.initTable();
             callBack && callBack();
         }
 
         public startAppearTile(callBack: Function) {
-            //从棋盘中没有棋子的位置随机生成一个棋子
-            // let positions = this.getPositions();
-            // let position = positions[Math.floor(Math.random() * positions.length)];
-            // this.appearOneTile(position);
-            this.addRandomTile();
 
+            //从棋盘中没有棋子的位置随机生成一个棋子
+            let positions = this.getPositions();
+            let position = positions[Math.floor(Math.random() * positions.length)];
+            this.appearOneTile(position);
+            // this.addRandomTile();
 
             callBack && callBack();
+        }
+
+        private addTestTile(x, y, value) {
+            let tile = new Tile(x, y, value);
+            // this.addChild(tile);
+
+            this.c_grid.insertTile(x, y, value);//数据
+            this.m_Tiles.push(tile);
+            this.addChild(tile);
         }
 
         private addRandomTile() {
@@ -74,15 +97,18 @@ namespace game {
                 let tile = new Tile(point.x, point.y, value);
                 // this.addChild(tile);
 
-                this.c_grid.insertTile(tile);
+                this.c_grid.insertTile(point.x, point.y, value);//数据
+                this.m_Tiles.push(tile);
+                this.addChild(tile);
             }
         }
 
         private m_Tiles: Tile[] = [];
 
         private appearOneTile(point: egret.Point) {
-            this._pieceContainer[point.x][point.y] = 1;
-            let tile = new Tile(point.x, point.y, 1);
+            let value = Math.random() < 0.9 ? 1 : 2;
+            this._pieceContainer[point.x][point.y] = value;
+            let tile = new Tile(point.x, point.y, value);
             this.m_Tiles.push(tile);
             this.addChild(tile);
         }
@@ -102,7 +128,7 @@ namespace game {
         }
 
         private isTile(x: number, y: number): boolean {
-            return this._pieceContainer[x][y] == 1;
+            return this._pieceContainer[x][y] != 0;
         }
 
         // private _pieceContainer: eui.Group;
@@ -119,32 +145,48 @@ namespace game {
          * 初始化棋盘
          * */
         private initTable() {
-            // for (let n = 0; n < 5; n++) {
-            //     this._pieceContainer[n] = [];
-            //     for (let m = 0; m < 5; m++) {
-            //         this._pieceContainer[n][m] = 0;
-            //     }
-            // }
-            //
+            for (let n = 0; n < 5; n++) {
+                this._pieceContainer[n] = [];
+                for (let m = 0; m < 5; m++) {
+                    this._pieceContainer[n][m] = 0;
+                }
+            }
+
             // console.log(this._pieceContainer);
 
             this.c_grid = new Grid(this);//初始化棋盘
+
+            // this.addTestTile(3,4,2);
+            // this.addTestTile(4,4,4);
+            // this.addTestTile(2,4,1);
         }
 
         startMoveTile(data: any, callBack: Function) {
             //异步的移动动作
             this.disAbleBtn();
+            this.clearMerge();
             let promiseVec = [];
-            promiseVec.push(this.moveAllTile(data.direction));
+            this.moveAllTile(data.direction).then(() => {
+                this.mergeTiles(data.direction).then(() => {
+                    callBack && callBack();
+                });
 
-
-            Promise.all(promiseVec).then(() => {
-                callBack && callBack();
             });
+
+
+            // Promise.all(promiseVec).then(() => {
+            //     callBack && callBack();
+            // });
         }
 
         finishMoveTile(data: any) {
             this.activeBtn();
+        }
+
+        private clearMerge() {
+            this.m_Tiles.forEach(tile => {
+                tile.savePosition();
+            })
         }
 
         private disAbleBtn() {
@@ -156,61 +198,18 @@ namespace game {
 
         private moveAllTile(direction: string): Promise<any> {
             let self = this;
-            let cell, tile;
             return new Promise((resolve, reject) => {
-                // this.getConfig(direction);
+                this.getConfig(direction);//将所有
                 let promiseVec = [];
-
-                let vector     = this.getVector(direction);//方向
-                let traversals = this.buildTraversals(vector);
-                let moved      = false;
-
-                this.prepareTiles();//移动之前的状态标记
-
-                traversals.x.forEach(function (x) {
-                    traversals.y.forEach(function (y) {
-                        cell = { x: x, y: y };
-                        tile = self.c_grid.cellContent(cell);
-
-                        if (tile) {
-                            let positions = self.findFarthestPosition(cell, vector);
-                            let next      = self.c_grid.cellContent(positions.next);
-
-                            // Only one merger per row traversal?
-                            if (next && next.value === tile.value && !next.mergedFrom) {
-                                let merged = new Tile(positions.next.x, positions.next.y, tile.value * 2);
-                                merged.mergedFrom = [tile, next];
-
-                                self.c_grid.insertTile(merged);
-                                self.c_grid.removeTile(tile);
-
-                                // Converge the two tiles' positions
-                                // tile.updatePosition(positions.next);
-
-                                // Update the score
-                                // self.score += merged.value;
-
-                                // The mighty 2048 tile
-                                // if (merged.value === 2048) self.won = true;
-                            } else {
-                                promiseVec.push(self.moveTile(tile, positions.farthest))
-                            }
-
-                            // if (!self.positionsEqual(cell, tile)) {
-                            //     moved = true; // The tile moved from its original cell!
-                            // }
-                        }
-                    });
-                });
-
                 //@version 1.0
-                // this.m_Tiles.forEach(tile => {
-                //     if (tile.wishPoint) {
-                //         promiseVec.push(this.asyncMove(tile));
-                //     }
-                // });
+                this.m_Tiles.forEach(tile => {
+                    if (tile.wishPoint) {
+                        promiseVec.push(this.asyncMove(tile));
+                    }
+                });
                 Promise.all(promiseVec).then(() => {
                     resolve();
+                    // this.clearRemove();
                     // this.active
                     // this.mergeTiles(direction);
                     this.activeBtn();
@@ -218,12 +217,35 @@ namespace game {
             })
         }
 
-        private moveTile(tile: Tile, farthest): Promise<any> {
-            return new Promise(resolve => {
-                tile.moveTo(farthest).call(() => {
-                    resolve();
-                })
-            })
+
+        private removeTile(tile) {
+            let self = this;
+            let index;
+            index = this.m_Tiles.indexOf(tile);
+            // for (let n = 0; n < this.m_Tiles.length; n++) {
+            //     let origin = this.m_Tiles[n].Point;
+            //     if (origin.x == tile.Point.x && origin.y == tile.Point.y) {
+            //         index = n;
+            //         break;
+            //     }
+            // }
+            if (index >= 0) {
+                this.removeChild(this.m_Tiles.splice(index, 1)[0]);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private getTile(x, y): Tile {
+            let self = this;
+            let need = null;
+            this.m_Tiles.forEach(myTile => {
+                if (myTile.Point.x == x && myTile.Point.y == y) {
+                    need = myTile;
+                }
+            });
+            return need;
         }
 
         private findFarthestPosition(cell: any, vector) {
@@ -247,19 +269,19 @@ namespace game {
             let index: number;
             switch (direction) {
                 case "up" : {
-                    index = 0;
+                    index = 3;
                     break;
                 }
                 case "right": {
-                    index = 1;
-                    break;
-                }
-                case "down" : {
                     index = 2;
                     break;
                 }
+                case "down" : {
+                    index = 1;
+                    break;
+                }
                 case "left" : {
-                    index = 3;
+                    index = 0;
                     break;
                 }
             }
@@ -282,17 +304,17 @@ namespace game {
             }
 
             // Always traverse from the farthest cell in the chosen direction
-            if (vector.x === 1) traversals.x = traversals.x.reverse();//倒装？
+            if (vector.x === 1) traversals.x = traversals.x.reverse();
             if (vector.y === 1) traversals.y = traversals.y.reverse();
 
             return traversals;
         }
 
         private prepareTiles() {
+            let self = this;
             this.c_grid.eachCell(function (x, y, tile) {
                 if (tile) {
-                    tile.mergedFrom = null;
-                    tile.savePosition();
+
                 }
             });
         }
@@ -302,29 +324,119 @@ namespace game {
          * */
         private mergeTiles(direction: string) {
             //检测是否能够合并
-            while(this.adjustMerge(direction)) {
-
-            }
+            this.adjustMerge(direction);//合并一次
+            //再移动一次
+            return this.moveAllTile(direction);
         }
 
         private adjustMerge(direction: string): boolean {
             let back = false;
-            //也要分辨方向
+            let vector = this.getVector(direction);
+            let build = this.buildTraversals(vector);
 
+            //右边，x 从大到小，y
+            //此时已经全部归于一个方向
+            build.x.forEach(x => {
+                build.y.forEach(y => {
+                    //如果有tile，并且下一个tile的值相等，进行合并
+                    let tile = this.getTile(x, y);
+                    let next = this.getTile(x - vector.x, y - vector.y);
+                    if (tile && next && tile.value == next.value && !tile.mergedFrom) {
+                        let merge = new Tile(tile.Point.x, tile.Point.y, tile.value + 1);
+                        merge.mergedFrom = [tile, next];
+                        this.m_Tiles.push(merge);
+                        this.addChild(merge);
+                        this._pieceContainer[tile.Point.x][tile.Point.y] = tile.value + 1;
+                        this._pieceContainer[next.Point.x][next.Point.y] = 0;
+
+
+                        //将merge插入tile位置并且将next删除
+                        // this.c_grid.insertTile(tile.x, tile.y, tile.value * 2);
+                        // this.c_grid.removeTile(next.x, next.y);
+
+                        this.removeTile(tile);
+                        this.removeTile(next);
+                    }
+                })
+            });
             return back;
         }
 
+        private _readyToRemove: Tile[] = [];
+
+        private clearRemove() {
+            this._readyToRemove.forEach(tile => {
+                this.removeTile(tile);
+            })
+        }
+
         private asyncMove(tile: Tile): Promise<any> {
+            let self = this;
             return new Promise((resolve, reject) => {
                 if (tile.wishPoint) {
-                    egret.Tween.get(tile).to({x: tile.wishPoint.y * PIECE_WIDTH + 42, y: tile.wishPoint.x * PIECE_WIDTH + 120}, 100).call(() => {
+                    egret.Tween.get(tile).to({x: tile.wishPoint.y * PIECE_WIDTH + 42, y: tile.wishPoint.x * PIECE_WIDTH + 120}, 300).call(() => {
+                        //@version 1.0
                         tile.point = tile.wishPoint;
                         tile.wishPoint = null;
+                        // if (tile.m_readyToRemove) {
+                        //     // self.removeTile(tile);
+                        //     self._readyToRemove.push(tile);
+                        // }
                         resolve();
                     });
                 } else {
                     resolve();
                 }
+            })
+        }
+
+        private getAllConfigs(direction: string) {
+            let self = this;
+            let vector = this.getVector(direction);
+            let build = this.buildTraversals(vector);
+            this.m_Tiles.forEach(tile => {
+                tile.savePosition();
+            });//思考，中途新加的点该如何
+
+            build.x.forEach(x => {
+                build.y.forEach(y => {
+                    let cell = this.getTile(x, y);//get现在位置
+                    if (cell) {
+                        //传入位置以及方向
+                        let position = {
+                            x,y
+                        };
+                        let farthest = this.findFarthestPosition(position, vector);
+                        //将棋子移动到最远的距离
+                        //数据
+                        let origin = {
+                            x: x,
+                            y: y
+                        };
+                        this.c_grid.moveTile(origin, farthest.farthest);
+                        cell.point = new egret.Point(farthest.farthest.x, farthest.farthest.y);
+                        cell.wishPoint = new egret.Point(farthest.farthest.x, farthest.farthest.y);
+
+                        //检测是否需要合并
+                        let next = this.getTile(farthest.next.x, farthest.next.y);
+
+                        if (next && next.value === cell.value && !next.mergedFrom) {
+                            let merged = new Tile(farthest.next.x, farthest.next.y, cell.value * 2);
+                            merged.mergedFrom = [cell, next];
+                            self.c_grid.insertTile(farthest.next.x, farthest.next.y, cell.value * 2);
+                            self.m_Tiles.push(merged);
+                            self.addChild(merged);
+
+                            //消除next
+                            self.removeTile(next);
+                            // this.c_grid.removeTile(next.Point.x, next.Point.y);//被占用，不用消除
+                            //等待动画播放完全以后再消除
+                            this.c_grid.removeTile(cell.Point.x, cell.Point.y);
+                            // cell.wishPoint = new egret.Point(farthest.farthest.x, farthest.farthest.y);
+                            cell.m_readyToRemove = true;
+                        }
+                    }
+                })
             })
         }
 
@@ -360,6 +472,8 @@ namespace game {
             this.changeData(row, forward);
 
             return back;
+
+
         }
 
         private changeData(row: boolean, forward: boolean) {
@@ -424,7 +538,7 @@ namespace game {
                 }
             }
 
-            //消除以及合并
+            // //消除以及合并
 
         }
 
@@ -442,9 +556,6 @@ namespace game {
 
         }
 
-        //释放内存
-        dealloc() {
 
-        }
     }
 }

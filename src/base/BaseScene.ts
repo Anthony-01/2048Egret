@@ -16,8 +16,8 @@ namespace base {
         /*
         * 回收内存
         * */
-        protected dealloc() {
-
+        public dealloc() {
+            this.removeChildren();
         }
     }
 }

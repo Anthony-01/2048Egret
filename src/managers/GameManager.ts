@@ -42,7 +42,7 @@ namespace manager {
         private moveTile(tile: game.Tile, cell: any) {
             this.c_grid.cells[tile.x][tile.y] = null;
             this.c_grid.cells[cell.x][cell.y] = tile;
-            tile.updatePosition(cell);
+            tile.updatePosition();
         }
 
         private positionsEqual(first: any, second: any) {

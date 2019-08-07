@@ -27,7 +27,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-import GameEngine = game.GameEngine;
+// import GameEngine = game.GameEngine;
 
 class Main extends eui.UILayer {
 
@@ -62,7 +62,7 @@ class Main extends eui.UILayer {
     private async runGame() {
         await this.loadResource();
         this.createGameScene();
-        await platform.login();
+        // await platform.login();
         // const userInfo = await platform.getUserInfo();
     }
 

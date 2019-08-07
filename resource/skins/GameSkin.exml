@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<e:Skin class="GameSkin" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+<e:Skin class="GameSkin" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing" xmlns:component="component.*">
 	<e:Image source="gamePreview_png" visible="false"/>
-	<e:Image source="sence_background_png"/>
+	<e:Image id="bg" source="sence_background_png"/>
 	<e:Image source="gamemenu_json.menubackground" visible="false"/>
 	<e:Label id="score" text="0" y="16" textColor="0x050000" fontFamily="Microsoft YaHei" bold="true" italic="true" size="45" horizontalCenter="0"/>
 	<e:Component x="42" y="120"/>
@@ -37,4 +37,6 @@
 			</e:Skin>
 		</e:skinName>
 	</e:Button>
+	<component:GameTimeHandle id="gameTime" y="66" enabled="true" horizontalCenter="0"/>
+	<component:GridHandle x="42" y="120"/>
 </e:Skin>
