@@ -3,6 +3,7 @@ namespace model {
     export class GameModel extends eui.UILayer {
         public _gameFrame: frame.GameFrame; //网络通信
         public _gameView: game.GameView;//主游戏界面
+        public _gameHost: game.GameHost;
 
         constructor() {
             super();

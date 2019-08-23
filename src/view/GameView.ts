@@ -9,6 +9,7 @@ namespace game {
         public btn_right:eui.Button;
         public gameTime:component.GameTimeHandle;
         public gridHandle:component.GridHandle;
+        public btn_return: eui.Button;
 
 
 
@@ -26,6 +27,15 @@ namespace game {
             this.btn_down.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
             this.btn_letf.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
             this.btn_right.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+            this.btn_return.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onReturn, this);
+        }
+
+        removeBtn() {
+            this.btn_up.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+            this.btn_down.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+            this.btn_letf.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+            this.btn_right.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
+            this.btn_return.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onReturn, this);
         }
 
 
@@ -35,42 +45,65 @@ namespace game {
         * */
         init() {
             console.log("gameView初始化!");
+            //生成各个子部件
+            // GameEngine.getIns().pushAction(EActionType.AK_GAME_BEGIN);
+            //生成随机棋子的动作
+            // GameEngine.getIns().pushAction(EActionType.AK_APPEAR_TILE);
         }
 
         private onMove(e: egret.TouchEvent) {
+            let command = new ActionCommand(this.bg, () => {
+                return new Promise((resolve, reject) => {
+                    console.log("命令一");
+                    resolve();
+                })
+            })
+            command.actionType = EActionType.move;
+            
             let name = e.currentTarget;
             // console.log(name);
             switch(name.label) {
                 case "上" : {
-                    GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "up"});
+                    command.moveDirection = EMoveDirection.up;
+                    // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "up"});
                     break;
                 }
                 case "下" : {
-                    GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "down"});
+                    command.moveDirection = EMoveDirection.down;
+                    // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "down"});
                     break;
                 }
                 case "左" : {
-                    GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "left"});
+                    command.moveDirection = EMoveDirection.left;
+                    // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "left"});
                     break;
                 }
                 case "右" : {
-                    GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "right"});
+                    command.moveDirection = EMoveDirection.right;
+                    // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "right"});
                     break;
                 }
             }
+            this.dispatchEventWith(customEvent.ViewEvent.EVENT_MOVE_EVENT, false, command);
+        }
+
+        private onReturn() {
+            this.dispatchEventWith(customEvent.ViewEvent.EVENT_RETURN_EVENT);
         }
 
         /**
-         * 游戏开始动作
+         * 游戏开始动作,使用回调函数的形式进行动作队列
          * @param data 游戏开始数据
          * */
         public startGameBegin(data: any, callBack?: Function) {
+            //初始化棋盘
             this.initTable();
             this.gridHandle.initTable();
             callBack && callBack();
         }
 
         public startAppearTile(callBack: Function) {
+            this.gridHandle.addRandomTile();
 
             //从棋盘中没有棋子的位置随机生成一个棋子
             let positions = this.getPositions();
@@ -81,14 +114,6 @@ namespace game {
             callBack && callBack();
         }
 
-        private addTestTile(x, y, value) {
-            let tile = new Tile(x, y, value);
-            // this.addChild(tile);
-
-            this.c_grid.insertTile(x, y, value);//数据
-            this.m_Tiles.push(tile);
-            this.addChild(tile);
-        }
 
         private addRandomTile() {
             if (this.c_grid.cellsAvailable()) {
@@ -165,10 +190,13 @@ namespace game {
             //异步的移动动作
             this.disAbleBtn();
             this.clearMerge();
-            let promiseVec = [];
+            this.gridHandle.moveTile(data.direction).then(() => {
+                this.activeBtn();
+                callBack && callBack();
+            });
             this.moveAllTile(data.direction).then(() => {
                 this.mergeTiles(data.direction).then(() => {
-                    callBack && callBack();
+
                 });
 
             });
@@ -219,16 +247,8 @@ namespace game {
 
 
         private removeTile(tile) {
-            let self = this;
             let index;
             index = this.m_Tiles.indexOf(tile);
-            // for (let n = 0; n < this.m_Tiles.length; n++) {
-            //     let origin = this.m_Tiles[n].Point;
-            //     if (origin.x == tile.Point.x && origin.y == tile.Point.y) {
-            //         index = n;
-            //         break;
-            //     }
-            // }
             if (index >= 0) {
                 this.removeChild(this.m_Tiles.splice(index, 1)[0]);
                 return true;
@@ -374,14 +394,10 @@ namespace game {
             let self = this;
             return new Promise((resolve, reject) => {
                 if (tile.wishPoint) {
-                    egret.Tween.get(tile).to({x: tile.wishPoint.y * PIECE_WIDTH + 42, y: tile.wishPoint.x * PIECE_WIDTH + 120}, 300).call(() => {
+                    egret.Tween.get(tile).to({x: tile.wishPoint.y * PIECE_WIDTH + 42, y: tile.wishPoint.x * PIECE_WIDTH + 120}, 300, egret.Ease.	backOut).call(() => {
                         //@version 1.0
                         tile.point = tile.wishPoint;
                         tile.wishPoint = null;
-                        // if (tile.m_readyToRemove) {
-                        //     // self.removeTile(tile);
-                        //     self._readyToRemove.push(tile);
-                        // }
                         resolve();
                     });
                 } else {
@@ -554,6 +570,11 @@ namespace game {
          * */
         public finishGameBegin(data: any) {
 
+        }
+
+        public dealloc() {
+            super.dealloc();
+            
         }
 
 

@@ -8,8 +8,8 @@ namespace game {
         start: number
     }
 
-    export enum EActionType { //动作类型
-        AK_GAME_BEGIN   =   0,        //游戏开始动画,
+    export enum EActionType {         //动作类型
+        AK_GAME_BEGIN   =   0,        //游戏开始动画
         AK_APPEAR_TILE  =   1,        //生成随机棋子
         AK_PIECE_MOVE   =   2,        //棋子移动动作
     }
@@ -20,6 +20,8 @@ namespace game {
 
         //动作队列
         public _actionList: IAction[] = [];
+
+        private _actionMaster: ActionExecutor;
 
         /**
          * 游戏引擎单例
@@ -33,42 +35,34 @@ namespace game {
         }
 
 
-        public m_StartScene: StartScene;
-
-
-        /**
+        /**，sawn， you are my baby as y
          * 游戏引擎初始化
          * */
         private init() {
-            // this.setGameView(new GameView());
-            // this.m_StartScene = new StartScene();
-            // this._gameView = new GameView();
+            this._gameHost = new GameHost();
         }
 
-        /**
-         * 初始化游戏,将开始界面替换进舞台
-         * */
-        initGame() {
-            this.m_StartScene = new StartScene();
-            manager.FrameManager.getInstance().setCurrentScene(this.m_StartScene);
+        runGame() {
+            this._gameView ? this._gameHost.setView(this._gameView) : console.warn("未初始化游戏视图");
+            this._gameView.addEventListener(customEvent.ViewEvent.EVENT_MOVE_EVENT, this.move, this);
+            //游戏网络部分的
         }
 
-        /**
-         * 开始游戏
-         * */
-        startGame() {
-            this._gameView = new GameView();
-            //初始化
-            manager.FrameManager.getInstance().replaceScene(this._gameView, true).then(() => {
-                this.m_StartScene.dealloc();
-                this.m_StartScene = null;
-                //将开始游戏动作导入动作队列
-                //游戏开始动作
-                this.pushAction(EActionType.AK_GAME_BEGIN);
-                //生成随机棋子的动作
-                this.pushAction(EActionType.AK_APPEAR_TILE);
-            });
+        private move(event: egret.Event) { 
 
+            //游戏移动,命令模式
+            let data: ActionCommand = event.data;
+            console.log(data);
+            data.addListener(ActionCommand.EVENT_COMPLETE, this.onMoveComplete, this);
+            data.execute();
+            //host验证动作=>执行
+
+
+            //通过host验证后上传服务器
+        }
+
+        private onMoveComplete() {
+            console.log("事件完成!");
         }
 
         /**
@@ -87,7 +81,14 @@ namespace game {
             };
             this._actionList.push(action);
             this.beginGameAction();
+
+            /**
+             * 1、生成动作对象
+             * 2、动作对象包含执行动作的对象、对象可以是组合对象，可以包含叶节点
+             */
         }
+
+        
 
         /**
          * 执行动作队列
@@ -118,7 +119,7 @@ namespace game {
                     this.startAppearTile(action);
                     break;
                 }
-                case EActionType.AK_PIECE_MOVE     :{
+                case EActionType.AK_PIECE_MOVE    :{
                     this.startMoveTiles(action);
                     break;
                 }
@@ -136,7 +137,7 @@ namespace game {
                     this.finishGameBegin(action);
                     break;
                 }
-                case EActionType.AK_PIECE_MOVE     :{
+                case EActionType.AK_PIECE_MOVE: {
                     this.finishMoveTile(action);
                     break;
                 }

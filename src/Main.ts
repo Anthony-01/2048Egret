@@ -29,6 +29,8 @@
 
 // import GameEngine = game.GameEngine;
 
+import BinarySearchTree = algorithm.BinarySearchTree;
+
 class Main extends eui.UILayer {
 
 
@@ -92,13 +94,40 @@ class Main extends eui.UILayer {
         })
     }
 
+
+    private startView: game.StartScene;
+    private gameView: game.GameView;
+
+
     /**
      * 创建场景界面
      * Create scene interface
      */
     protected createGameScene(): void {
-        //游戏引擎开始游戏
-        game.GameEngine.getIns().initGame();
+        //初始化开始界面
+        this.startView = new game.StartScene();
+        this.startView.addEventListener(customEvent.ViewEvent.EVENT_GAME_START, this.startGame, this);
+        manager.FrameManager.getInstance().setCurrentScene(this.startView);
+        // game.GameEngine.getIns().initGame();
+    }
+
+    private startGame() {
+        this.gameView = new game.GameView();
+        game.GameEngine.getIns()._gameView = this.gameView;
+        this.gameView.addEventListener(customEvent.ViewEvent.EVENT_RETURN_EVENT, this.return, this);
+        //初始化
+        manager.FrameManager.getInstance().replaceScene(this.gameView, true).then(() => {
+            //游戏开始
+            game.GameEngine.getIns().runGame();
+        });
+    }
+
+    private return() {
+        //host状态重置
+        manager.FrameManager.getInstance().replaceScene(this.startView, true).then(() => {
+            this.gameView.dealloc();
+            this.gameView = null;
+        });
     }
 
 }

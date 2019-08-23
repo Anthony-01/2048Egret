@@ -52,14 +52,16 @@ var manager;
                         console.log("定时器对象错误");
                         return false;
                     }
+                    else {
+                        var timer = timerInfo.timer;
+                        var callBack = timerInfo.callBack;
+                        timer.removeEventListener(egret.TimerEvent.TIMER, callBack, target);
+                        timer.stop();
+                        timer = null;
+                        this._timerQueue.splice(n, 1);
+                        break;
+                    }
                 }
-                var timer = timerInfo.timer;
-                var callBack = timerInfo.callBack;
-                timer.removeEventListener(egret.TimerEvent.TIMER, callBack, target);
-                timer.stop();
-                timer = null;
-                this._timerQueue.splice(n, 1);
-                break;
             }
             return true;
         };

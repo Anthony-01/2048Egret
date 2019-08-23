@@ -14,6 +14,7 @@ namespace component {
         constructor() {
             super();
             this.skinName = GameTimerSkin;
+            this.addEventListener(egret.Event.REMOVED_FROM_STAGE, this.remove, this);
         }
 
         // public onComplete() {
@@ -35,5 +36,9 @@ namespace component {
             manager.TimerCtrl.getInstance().createTimer(this, 1000, 0, this.addCurrentTime,"gameTime");
         }
 
+        private remove() {
+            this.removeEventListener(egret.Event.REMOVED_FROM_STAGE, this.remove, this);
+            manager.TimerCtrl.getInstance().killTimer(this, "gameTime");
+        }
     }
 }

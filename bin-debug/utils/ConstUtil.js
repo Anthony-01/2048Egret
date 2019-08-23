@@ -14,7 +14,7 @@ var utils;
         if (color === void 0) { color = "red"; }
         if (fontSize === void 0) { fontSize = 1.5; }
         console.log("%c" + msg, "color: " + color + "; font-size: " + fontSize);
-        console.log(data);
+        data && console.log(data);
     }
     utils.colorConsole = colorConsole;
 })(utils || (utils = {}));

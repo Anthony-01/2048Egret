@@ -19,6 +19,9 @@ var myComponent;
             return _this;
             // console.log("MyButton: construct");
         }
+        MyButton.prototype.init = function () {
+            console.log("MyButton");
+        };
         MyButton.prototype.initBtn = function () {
             this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onBegin, this);
             this.addEventListener(egret.TouchEvent.TOUCH_END, this.onBegin, this);
@@ -31,22 +34,26 @@ var myComponent;
             switch (evt.type) {
                 case egret.TouchEvent.TOUCH_BEGIN: {
                     console.log("touchBegin");
-                    this.btn_down.visible = true;
+                    // this.btn_down.visible = true;
+                    this.currentState = "down";
                     break;
                 }
                 case egret.TouchEvent.TOUCH_END: {
                     console.log("touchEnd");
-                    this.btn_down.visible = false;
+                    // this.btn_down.visible = false;
+                    this.currentState = "up";
                     break;
                 }
                 case egret.TouchEvent.TOUCH_RELEASE_OUTSIDE: {
                     console.log("touchOUT");
-                    this.btn_down.visible = false;
+                    // this.btn_down.visible = false;
+                    this.currentState = "up";
                     break;
                 }
                 case egret.TouchEvent.TOUCH_CANCEL: {
                     console.log("touchCancel");
-                    this.btn_down.visible = false;
+                    // this.btn_down.visible = false;
+                    this.currentState = "up";
                     break;
                 }
                 case egret.TouchEvent.TOUCH_TAP: {

@@ -12,6 +12,7 @@ namespace game {
 
         public initBtn() {
             this.btn_start.addEventListener(egret.TouchEvent.TOUCH_TAP, this.startGame, this);
+            
         }
 
         init() {
@@ -20,7 +21,8 @@ namespace game {
 
         private startGame() {
             //开始游戏
-            GameEngine.getIns().startGame();
+            // GameEngine.getIns().startGame();
+            this.dispatchEventWith(customEvent.ViewEvent.EVENT_GAME_START);
         }
 
     }

@@ -20,15 +20,16 @@ var base;
             _this.m_ifComplete = false;
             _this._adjustComponent = [];
             _this._scaleComponent = [];
-            _this._touchButton = null;
             _this.addEventListener(eui.UIEvent.COMPLETE, _this.onComplete, _this);
             return _this;
         }
         BaseComponent.prototype.onComplete = function () {
-            console.log("baseComponent:组件初始化完毕");
+            // console.log("baseComponent:组件初始化完毕");
+            this.removeEventListener(eui.UIEvent.COMPLETE, this.onComplete, this);
             this.adjustComponent();
             this.m_ifComplete = true;
             this.initBtn();
+            this.init();
             this.beginComponentAction();
         };
         BaseComponent.prototype.beginComponentAction = function () {
@@ -44,43 +45,15 @@ var base;
          * */
         BaseComponent.prototype.initBtn = function () {
         };
+        /*
+        * 子类的组件初始化
+        * */
+        BaseComponent.prototype.init = function () {
+        };
         /**
          * 适配屏幕
          * */
         BaseComponent.prototype.adjustComponent = function () {
-        };
-        /**
-         * 按钮动画
-         * */
-        BaseComponent.prototype.addBtnChange = function (button) {
-            button.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchBeginChange, this);
-            button.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.onTouchMoveChange, this);
-            button.addEventListener(egret.TouchEvent.TOUCH_END, this.onTouchEndChange, this);
-            button.addEventListener(egret.TouchEvent.TOUCH_RELEASE_OUTSIDE, this.onTouchEndChange, this);
-        };
-        BaseComponent.prototype.removeBrnChange = function (button) {
-            button.removeEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onTouchBeginChange, this);
-            button.removeEventListener(egret.TouchEvent.TOUCH_MOVE, this.onTouchMoveChange, this);
-            button.removeEventListener(egret.TouchEvent.TOUCH_END, this.onTouchEndChange, this);
-            button.removeEventListener(egret.TouchEvent.TOUCH_RELEASE_OUTSIDE, this.onTouchEndChange, this);
-        };
-        BaseComponent.prototype.onTouchBeginChange = function (e) {
-            this._touchButton = e.currentTarget;
-            var scale = this._touchButton.scaleX - 0.1;
-            this._touchButton.scaleX = this._touchButton.scaleY = scale;
-        };
-        BaseComponent.prototype.onTouchMoveChange = function (e) {
-            if (e.currentTarget != this._touchButton) {
-            }
-        };
-        BaseComponent.prototype.onTouchEndChange = function (e) {
-            if (e.currentTarget != this._touchButton) {
-            }
-            if (null != this._touchButton) {
-                var scale = this._touchButton.scaleX + 0.1;
-                this._touchButton.scaleX = this._touchButton.scaleY = scale;
-            }
-            this._touchButton = null;
         };
         BaseComponent.prototype.pushAction = function (callBack) {
             if (this.m_ifComplete) {

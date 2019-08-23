@@ -24,6 +24,7 @@ var base;
         * 回收内存
         * */
         BaseScene.prototype.dealloc = function () {
+            this.removeChildren();
         };
         return BaseScene;
     }(base.BaseComponent));

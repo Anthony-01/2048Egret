@@ -17,19 +17,14 @@ var game;
             return _super.call(this, "StartScene") || this;
         }
         StartScene.prototype.initBtn = function () {
-            var _this = this;
-            this.btn_start = new myComponent.MyButton();
-            this.btn_start.x = 320;
-            this.btn_start.y = 534;
-            this.addChild(this.btn_start);
-            var callBack = function () {
-                _this.btn_start.addEventListener(egret.TouchEvent.TOUCH_TAP, _this.startGame, _this);
-            };
-            this.btn_start.pushAction(callBack);
+            this.btn_start.addEventListener(egret.TouchEvent.TOUCH_TAP, this.startGame, this);
+        };
+        StartScene.prototype.init = function () {
         };
         StartScene.prototype.startGame = function () {
             //开始游戏
-            game.GameEngine.getIns().startGame();
+            // GameEngine.getIns().startGame();
+            this.dispatchEventWith(customEvent.ViewEvent.EVENT_GAME_START);
         };
         return StartScene;
     }(base.BaseScene));

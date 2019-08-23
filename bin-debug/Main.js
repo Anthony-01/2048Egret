@@ -71,7 +71,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var GameEngine = game.GameEngine;
+// import GameEngine = game.GameEngine;
+var BinarySearchTree = algorithm.BinarySearchTree;
 var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
@@ -106,9 +107,6 @@ var Main = (function (_super) {
                     case 1:
                         _a.sent();
                         this.createGameScene();
-                        return [4 /*yield*/, platform.login()];
-                    case 2:
-                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -159,8 +157,29 @@ var Main = (function (_super) {
      * Create scene interface
      */
     Main.prototype.createGameScene = function () {
-        //游戏引擎开始游戏
-        game.GameEngine.getIns().initGame();
+        //初始化开始界面
+        this.startView = new game.StartScene();
+        this.startView.addEventListener(customEvent.ViewEvent.EVENT_GAME_START, this.startGame, this);
+        manager.FrameManager.getInstance().setCurrentScene(this.startView);
+        // game.GameEngine.getIns().initGame();
+    };
+    Main.prototype.startGame = function () {
+        this.gameView = new game.GameView();
+        game.GameEngine.getIns()._gameView = this.gameView;
+        this.gameView.addEventListener(customEvent.ViewEvent.EVENT_RETURN_EVENT, this.return, this);
+        //初始化
+        manager.FrameManager.getInstance().replaceScene(this.gameView, true).then(function () {
+            //游戏开始
+            game.GameEngine.getIns().runGame();
+        });
+    };
+    Main.prototype.return = function () {
+        var _this = this;
+        //host状态重置
+        manager.FrameManager.getInstance().replaceScene(this.startView, true).then(function () {
+            _this.gameView.dealloc();
+            _this.gameView = null;
+        });
     };
     return Main;
 }(eui.UILayer));

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="ReturnButton" xmlns:e="http://ns.egret.com/eui" states="up,down,disabled" >
+	<e:Image source.up="return_normal" source.down="return_down" source.disabled="return_normal"/>
+</e:Skin>

@@ -15,6 +15,7 @@
 		"resource/skins/component/GridSkin.exml",
 		"resource/skins/component/MyButton.exml",
 		"resource/skins/component/MyPanel.exml",
+		"resource/skins/component/ReturnButton.exml",
 		"resource/skins/GameSkin.exml",
 		"resource/skins/LoadingSkin.exml",
 		"resource/skins/StartSkin.exml"

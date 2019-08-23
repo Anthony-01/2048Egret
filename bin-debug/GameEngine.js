@@ -34,30 +34,28 @@ var game;
             }
             return this.m_Instance;
         };
-        /**
+        /**，sawn， you are my baby as y
          * 游戏引擎初始化
          * */
         GameEngine.prototype.init = function () {
-            // this.setGameView(new GameView());
-            this.m_StartScene = new game.StartScene();
-            this._gameView = new game.GameView();
+            this._gameHost = new game.GameHost();
         };
-        /**
-         * 初始化游戏,将开始界面替换进舞台
-         * */
-        GameEngine.prototype.initGame = function () {
-            manager.FrameManager.getInstance().setCurrentScene(this.m_StartScene);
+        GameEngine.prototype.runGame = function () {
+            this._gameView ? this._gameHost.setView(this._gameView) : console.warn("未初始化游戏视图");
+            this._gameView.addEventListener(customEvent.ViewEvent.EVENT_MOVE_EVENT, this.move, this);
+            //游戏网络部分的
         };
-        /**
-         * 开始游戏
-         * */
-        GameEngine.prototype.startGame = function () {
-            manager.FrameManager.getInstance().replaceScene(this._gameView, true);
-            //将开始游戏动作导入动作队列
-            //游戏开始动作
-            this.pushAction(EActionType.AK_GAME_BEGIN);
-            //生成随机棋子的动作
-            this.pushAction(EActionType.AK_APPEAR_TILE);
+        GameEngine.prototype.move = function (event) {
+            //游戏移动,命令模式
+            var data = event.data;
+            console.log(data);
+            data.addListener(game.ActionCommand.EVENT_COMPLETE, this.onMoveComplete, this);
+            data.execute();
+            //host验证动作=>执行
+            //通过host验证后上传服务器
+        };
+        GameEngine.prototype.onMoveComplete = function () {
+            console.log("事件完成!");
         };
         /**
          * 添加游戏动作
@@ -75,6 +73,10 @@ var game;
             };
             this._actionList.push(action);
             this.beginGameAction();
+            /**
+             * 1、生成动作对象
+             * 2、动作对象包含执行动作的对象、对象可以是组合对象，可以包含叶节点
+             */
         };
         /**
          * 执行动作队列

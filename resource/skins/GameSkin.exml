@@ -37,6 +37,7 @@
 			</e:Skin>
 		</e:skinName>
 	</e:Button>
-	<component:GameTimeHandle id="gameTime" y="66" enabled="true" horizontalCenter="0"/>
-	<component:GridHandle x="42" y="120"/>
+	<e:Button id="btn_return" label="Button" y="8" skinName="ReturnButton"/>
+	<component:GameTimeHandle id="gameTime" y="66" enabled="true" horizontalCenter="0" visible="false"/>
+	<component:GridHandle id="gridHandle" x="42" y="120"/>
 </e:Skin>

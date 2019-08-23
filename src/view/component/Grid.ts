@@ -132,6 +132,7 @@ namespace game {
             }
         }
 
+        //移动棋子
         public moveTile(tile: any, cell: any) {
             let temp = this.cells[tile.x][tile.y];
             this.cells[tile.x][tile.y] = null;

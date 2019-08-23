@@ -36,6 +36,8 @@ var manager;
         FrameManager.prototype.setCurrentScene = function (scene) {
             this.m_CurrentScene = null;
             this.m_CurrentScene = scene;
+            //将其余场景移除
+            this.m_MainStage.removeChildren();
             this.m_MainStage.addChild(scene);
         };
         FrameManager.prototype.getCurrentScene = function () {
@@ -46,26 +48,40 @@ var manager;
         };
         //在切换场景时候将旧的场景销毁
         FrameManager.prototype.replaceScene = function (newScene, animation) {
+            var _this = this;
             var curController = this.m_CurrentScene;
             if (this.m_CurrentScene == newScene) {
                 utils.colorConsole("替换错误");
             }
             this.m_CurrentScene = null;
             this.m_CurrentScene = newScene;
-            if (animation) {
+            if (animation && curController) {
                 //添加新视图
                 newScene.alpha = 0;
                 this.m_MainStage.addChild(newScene);
                 //旧视图渐变成透明
-                var tw = egret.Tween.get(newScene);
-                var tw1 = egret.Tween.get(curController);
-                tw1.to({ "alpha": 0 }, 1000, egret.Ease.backOut);
-                tw.to({ "alpha": 1 }, 1000, egret.Ease.backIn);
-                this.m_MainStage.removeChild(curController);
+                var tw_1 = egret.Tween.get(newScene);
+                var tw1_1 = egret.Tween.get(curController);
+                var promiseVec = [];
+                promiseVec.push(new Promise(function (resolve, reject) {
+                    tw1_1.to({ "alpha": 0 }, 1000, egret.Ease.backOut).call(function () {
+                        resolve();
+                    });
+                }));
+                promiseVec.push(new Promise(function (resolve, reject) {
+                    tw_1.to({ "alpha": 1 }, 1000, egret.Ease.backIn).call(function () {
+                        resolve();
+                    });
+                }));
+                return Promise.all(promiseVec).then(function () {
+                    _this.m_MainStage.removeChild(curController);
+                    return Promise.resolve();
+                });
             }
             else {
                 this.m_MainStage.addChild(newScene);
                 this.m_MainStage.removeChild(curController);
+                return Promise.resolve();
             }
         };
         return FrameManager;
