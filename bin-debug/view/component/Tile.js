@@ -25,6 +25,7 @@ var game;
         GameValue[GameValue["eleven"] = 1024] = "eleven";
     })(GameValue = game.GameValue || (game.GameValue = {}));
     game.PIECE_WIDTH = 111;
+    game.C_MOVE_TIME = 500;
     var Tile = (function (_super) {
         __extends(Tile, _super);
         function Tile(x, y, value) {
@@ -107,6 +108,18 @@ var game;
         Tile.prototype.updatePosition = function () {
             this.x = this.Point.y * game.PIECE_WIDTH;
             this.y = this.Point.x * game.PIECE_WIDTH;
+        };
+        Tile.prototype.moveTo = function (data) {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                egret.Tween.get(_this).to({ x: data.goal.y * game.PIECE_WIDTH, y: data.goal.x * game.PIECE_WIDTH }, game.C_MOVE_TIME, egret.Ease.quadIn).call(function () {
+                    if (data.merge == true) {
+                        _this.visible = false;
+                    }
+                    _this.point = new egret.Point(data.goal.x, data.goal.y);
+                    resolve();
+                });
+            });
         };
         return Tile;
     }(base.BaseComponent));

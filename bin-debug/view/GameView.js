@@ -10,6 +10,7 @@ r.prototype = e.prototype, t.prototype = new r();
 };
 var game;
 (function (game) {
+    //统筹各组件
     var GameView = (function (_super) {
         __extends(GameView, _super);
         function GameView() {
@@ -43,15 +44,36 @@ var game;
             this.btn_right.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onMove, this);
             this.btn_return.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onReturn, this);
         };
-        /*
-        * 初始化组件
-        * */
+        GameView.prototype.updateView = function () {
+        };
+        /**
+         * 初始化组件,各部分handle
+         */
         GameView.prototype.init = function () {
             console.log("gameView初始化!");
+            console.log(this.gameTime);
+            console.log(this.gridHandle);
+            //如何做动画模块
             //生成各个子部件
             // GameEngine.getIns().pushAction(EActionType.AK_GAME_BEGIN);
             //生成随机棋子的动作
             // GameEngine.getIns().pushAction(EActionType.AK_APPEAR_TILE);
+        };
+        GameView.prototype.moveTiles = function (data) {
+            var _this = this;
+            //播放音效、移动滑块等
+            //Lee
+            console.warn(data);
+            var self = this;
+            return new Promise(function (resolve, reject) {
+                var promiseVec = [];
+                promiseVec.push(_this.gridHandle.moveTiles(data));
+                Promise.all(promiseVec).then(function () {
+                    resolve();
+                }).catch(function (err) {
+                    reject(err);
+                });
+            });
         };
         GameView.prototype.onMove = function (e) {
             var command = new game.ActionCommand(this.bg, function () {
@@ -62,25 +84,24 @@ var game;
             });
             command.actionType = game.EActionType.move;
             var name = e.currentTarget;
-            // console.log(name);
             switch (name.label) {
                 case "上": {
-                    command.moveDirection = game.EMoveDirection.up;
+                    command.actionData = game.EMoveDirection.up;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "up"});
                     break;
                 }
                 case "下": {
-                    command.moveDirection = game.EMoveDirection.down;
+                    command.actionData = game.EMoveDirection.down;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "down"});
                     break;
                 }
                 case "左": {
-                    command.moveDirection = game.EMoveDirection.left;
+                    command.actionData = game.EMoveDirection.left;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "left"});
                     break;
                 }
                 case "右": {
-                    command.moveDirection = game.EMoveDirection.right;
+                    command.actionData = game.EMoveDirection.right;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "right"});
                     break;
                 }
@@ -90,12 +111,24 @@ var game;
         GameView.prototype.onReturn = function () {
             this.dispatchEventWith(customEvent.ViewEvent.EVENT_RETURN_EVENT);
         };
+        GameView.prototype.startGame = function (tile) {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                _this.gridHandle.addTile(tile.x, tile.y, tile.value);
+                resolve();
+            });
+            // grid.forEach((ary, row) => {
+            // ary.forEach((value, col) => {
+            // })
+            // } )
+        };
         /**
          * 游戏开始动作,使用回调函数的形式进行动作队列
          * @param data 游戏开始数据
          * */
         GameView.prototype.startGameBegin = function (data, callBack) {
-            this.initTable();
+            //初始化棋盘
+            // this.initTable();
             this.gridHandle.initTable();
             callBack && callBack();
         };
@@ -144,23 +177,23 @@ var game;
         /**
          * 初始化棋盘
          * */
-        GameView.prototype.initTable = function () {
-            for (var n = 0; n < 5; n++) {
-                this._pieceContainer[n] = [];
-                for (var m = 0; m < 5; m++) {
-                    this._pieceContainer[n][m] = 0;
-                }
-            }
-            // console.log(this._pieceContainer);
-            this.c_grid = new game.Grid(this); //初始化棋盘
-            // this.addTestTile(3,4,2);
-            // this.addTestTile(4,4,4);
-            // this.addTestTile(2,4,1);
-        };
+        // private initTable() {
+        //     for (let n = 0; n < 5; n++) {
+        //         this._pieceContainer[n] = [];
+        //         for (let m = 0; m < 5; m++) {
+        //             this._pieceContainer[n][m] = 0;
+        //         }
+        //     }
+        //     // console.log(this._pieceContainer);
+        //     this.c_grid = new Grid(this);//初始化棋盘
+        //     // this.addTestTile(3,4,2);
+        //     // this.addTestTile(4,4,4);
+        //     // this.addTestTile(2,4,1);
+        // }
         GameView.prototype.startMoveTile = function (data, callBack) {
             var _this = this;
             //异步的移动动作
-            this.disAbleBtn();
+            this.disabledBtn();
             this.clearMerge();
             this.gridHandle.moveTile(data.direction).then(function () {
                 _this.activeBtn();
@@ -181,12 +214,6 @@ var game;
             this.m_Tiles.forEach(function (tile) {
                 tile.savePosition();
             });
-        };
-        GameView.prototype.disAbleBtn = function () {
-            this.btn_up.enabled = false;
-            this.btn_down.enabled = false;
-            this.btn_letf.enabled = false;
-            this.btn_right.enabled = false;
         };
         GameView.prototype.moveAllTile = function (direction) {
             var _this = this;
@@ -499,12 +526,20 @@ var game;
             this.btn_letf.enabled = true;
             this.btn_right.enabled = true;
         };
+        GameView.prototype.disabledBtn = function () {
+            this.btn_up.enabled = false;
+            this.btn_down.enabled = false;
+            this.btn_letf.enabled = false;
+            this.btn_right.enabled = false;
+        };
         /**
          * 游戏开始结束
          * */
         GameView.prototype.finishGameBegin = function (data) {
         };
         GameView.prototype.dealloc = function () {
+            //移除所有监听事件
+            this.removeBtn();
             _super.prototype.dealloc.call(this);
         };
         return GameView;

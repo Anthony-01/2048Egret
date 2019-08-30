@@ -1,4 +1,6 @@
 namespace game {
+
+    //统筹各组件
     export class GameView extends base.BaseScene{
 
         public bg:eui.Image;
@@ -7,12 +9,11 @@ namespace game {
         public btn_down:eui.Button;
         public btn_letf:eui.Button;
         public btn_right:eui.Button;
-        public gameTime:component.GameTimeHandle;
-        public gridHandle:component.GridHandle;
         public btn_return: eui.Button;
 
-
-
+        public gameTime:component.GameTimeHandle;
+        public gridHandle:component.GridHandle;
+        
 
         constructor() {
             super("GameScene");
@@ -38,17 +39,43 @@ namespace game {
             this.btn_return.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.onReturn, this);
         }
 
+        
+
+        updateView() {
+
+        }
 
 
-        /*
-        * 初始化组件
-        * */
+
+        /**
+         * 初始化组件,各部分handle
+         */
         init() {
             console.log("gameView初始化!");
+            console.log(this.gameTime);
+            console.log(this.gridHandle);
+            //如何做动画模块
+
             //生成各个子部件
             // GameEngine.getIns().pushAction(EActionType.AK_GAME_BEGIN);
             //生成随机棋子的动作
             // GameEngine.getIns().pushAction(EActionType.AK_APPEAR_TILE);
+        }
+
+        public moveTiles(data: any): Promise<any> { 
+            //播放音效、移动滑块等
+            //Lee
+            console.warn(data);
+            let self = this;
+            return new Promise((resolve, reject) => {
+                let promiseVec = [];
+                promiseVec.push(this.gridHandle.moveTiles(data)); 
+                Promise.all(promiseVec).then(() => {
+                    resolve();
+                }).catch(err => {
+                    reject(err);
+                })
+            })
         }
 
         private onMove(e: egret.TouchEvent) {
@@ -61,25 +88,24 @@ namespace game {
             command.actionType = EActionType.move;
             
             let name = e.currentTarget;
-            // console.log(name);
             switch(name.label) {
                 case "上" : {
-                    command.moveDirection = EMoveDirection.up;
+                    command.actionData = EMoveDirection.up;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "up"});
                     break;
                 }
                 case "下" : {
-                    command.moveDirection = EMoveDirection.down;
+                    command.actionData = EMoveDirection.down;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "down"});
                     break;
                 }
                 case "左" : {
-                    command.moveDirection = EMoveDirection.left;
+                    command.actionData = EMoveDirection.left;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "left"});
                     break;
                 }
                 case "右" : {
-                    command.moveDirection = EMoveDirection.right;
+                    command.actionData = EMoveDirection.right;
                     // GameEngine.getIns().pushAction(EActionType.AK_PIECE_MOVE, {direction: "right"});
                     break;
                 }
@@ -91,13 +117,26 @@ namespace game {
             this.dispatchEventWith(customEvent.ViewEvent.EVENT_RETURN_EVENT);
         }
 
+        public startGame(tile: ITileData): Promise<any> {
+            return new Promise((resolve, reject) => {
+                this.gridHandle.addTile(tile.x, tile.y, tile.value);
+                resolve();
+            })
+            // grid.forEach((ary, row) => {
+                // ary.forEach((value, col) => {
+                    
+                // })
+            // } )
+            
+        }
+
         /**
          * 游戏开始动作,使用回调函数的形式进行动作队列
          * @param data 游戏开始数据
          * */
         public startGameBegin(data: any, callBack?: Function) {
             //初始化棋盘
-            this.initTable();
+            // this.initTable();
             this.gridHandle.initTable();
             callBack && callBack();
         }
@@ -169,26 +208,26 @@ namespace game {
         /**
          * 初始化棋盘
          * */
-        private initTable() {
-            for (let n = 0; n < 5; n++) {
-                this._pieceContainer[n] = [];
-                for (let m = 0; m < 5; m++) {
-                    this._pieceContainer[n][m] = 0;
-                }
-            }
+        // private initTable() {
+        //     for (let n = 0; n < 5; n++) {
+        //         this._pieceContainer[n] = [];
+        //         for (let m = 0; m < 5; m++) {
+        //             this._pieceContainer[n][m] = 0;
+        //         }
+        //     }
 
-            // console.log(this._pieceContainer);
+        //     // console.log(this._pieceContainer);
 
-            this.c_grid = new Grid(this);//初始化棋盘
+        //     this.c_grid = new Grid(this);//初始化棋盘
 
-            // this.addTestTile(3,4,2);
-            // this.addTestTile(4,4,4);
-            // this.addTestTile(2,4,1);
-        }
+        //     // this.addTestTile(3,4,2);
+        //     // this.addTestTile(4,4,4);
+        //     // this.addTestTile(2,4,1);
+        // }
 
         startMoveTile(data: any, callBack: Function) {
             //异步的移动动作
-            this.disAbleBtn();
+            this.disabledBtn();
             this.clearMerge();
             this.gridHandle.moveTile(data.direction).then(() => {
                 this.activeBtn();
@@ -215,13 +254,6 @@ namespace game {
             this.m_Tiles.forEach(tile => {
                 tile.savePosition();
             })
-        }
-
-        private disAbleBtn() {
-            this.btn_up.enabled = false;
-            this.btn_down.enabled = false;
-            this.btn_letf.enabled = false;
-            this.btn_right.enabled = false;
         }
 
         private moveAllTile(direction: string): Promise<any> {
@@ -565,6 +597,13 @@ namespace game {
             this.btn_right.enabled = true;
         }
 
+        private disabledBtn() {
+            this.btn_up.enabled = false;
+            this.btn_down.enabled = false;
+            this.btn_letf.enabled = false;
+            this.btn_right.enabled = false;
+        }
+
         /**
          * 游戏开始结束
          * */
@@ -573,6 +612,8 @@ namespace game {
         }
 
         public dealloc() {
+            //移除所有监听事件
+            this.removeBtn();
             super.dealloc();
             
         }

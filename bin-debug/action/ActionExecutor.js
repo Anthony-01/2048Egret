@@ -6,7 +6,11 @@ var game;
     var C_PROCESSOR_MAP;
     //各类共用动作执行表
     function initProcess() {
-        C_PROCESSOR_MAP = {};
+        var moveProcessor = new game.MoveProcessor();
+        C_PROCESSOR_MAP = (_a = {},
+            _a[game.EActionType.start] = moveProcessor,
+            _a);
+        var _a;
     }
     //context类
     var ActionExecutor = (function () {
@@ -18,7 +22,16 @@ var game;
         }
         ActionExecutor.prototype.assertAction = function () {
         };
-        ActionExecutor.prototype.applyAction = function () {
+        ActionExecutor.prototype.applyAction = function (command, host) {
+            var type = command.actionType;
+            // let board = grid.getGrid();
+            var processor = this._processorMap[type];
+            if (processor.assertAction(command, host)) {
+                processor.applyAction(command, host);
+            }
+            else {
+                console.error("动作验证失败", command.actionType);
+            }
         };
         ActionExecutor.prototype.cancelAction = function () {
         };

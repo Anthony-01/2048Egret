@@ -16,6 +16,8 @@ namespace game {
 
     export const PIECE_WIDTH = 111;
 
+    export const C_MOVE_TIME = 500;
+
 
     export class Tile extends base.BaseComponent {
         public _gameValue: GameValue;
@@ -98,5 +100,20 @@ namespace game {
 
 
         public m_readyToRemove:boolean = false;
+
+        public moveTo(data: any): Promise<any> {
+            return new Promise((resolve, reject) => {
+                egret.Tween.get(this).to({x: data.goal.y * PIECE_WIDTH, y: data.goal.x * PIECE_WIDTH}, C_MOVE_TIME, egret.Ease.quadIn).call(() => {
+                    if (data.merge == true) {
+                        this.visible = false;
+                    }
+                    this.point = new egret.Point(data.goal.x, data.goal.y);
+                    resolve();
+                })
+            })
+        }
+
+        //更改Tile的数据
+        
     }
 }

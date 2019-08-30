@@ -21,6 +21,9 @@ namespace game {
         //动作队列
         public _actionList: IAction[] = [];
 
+        //
+        private _actionQueqe: any[] = [];
+
         private _actionMaster: ActionExecutor;
 
         /**
@@ -42,144 +45,63 @@ namespace game {
             this._gameHost = new GameHost();
         }
 
+        // private _actionList: any[] = [];
+
         runGame() {
             this._gameView ? this._gameHost.setView(this._gameView) : console.warn("未初始化游戏视图");
+            this._gameHost.addEventListener(customEvent.ModelEvent.EVENT_ACTION_COMPLETE, this.actionComplete, this);
             this._gameView.addEventListener(customEvent.ViewEvent.EVENT_MOVE_EVENT, this.move, this);
+            this._gameHost.startGame();
+            let command = new ActionCommand(this, () => {
+                return new Promise((resolve) => {
+                    console.log("游戏开始");
+                })
+            })
+            command.actionType = EActionType.start;
+            this._gameHost.applyAction(command);
+            //构造开始游戏的命令
+            // let command = new ActionCommand(this._gameView, this._gameView.startGame)构造命令时，不能绕过数据
+
+            // this._gameView.addEventListener(customEvent.ViewEvent.EVENT_MOVE_EVENT, this.move, this);
             //游戏网络部分的
+            manager.TimerCtrl.getInstance().createTimer(this, 1000 / 60, 0, this.onUpdate, "gameUpdate");
         }
 
+        private actionComplete() {
+            let command = this._actionQueqe.shift();
+            if (command) {
+                this._gameHost.applyAction(command);
+            }
+            
+        }
+
+        //gameEngine的游戏职能，是否需要将动作队列移动至gamehost
         private move(event: egret.Event) { 
 
             //游戏移动,命令模式
             let data: ActionCommand = event.data;
-            console.log(data);
-            data.addListener(ActionCommand.EVENT_COMPLETE, this.onMoveComplete, this);
-            data.execute();
+            // console.log(data);
+            // data.addListener(ActionCommand.EVENT_COMPLETE, this.onMoveComplete, this);
+            // data.execute();
             //host验证动作=>执行
 
-
             //通过host验证后上传服务器
+            this._actionQueqe.push(data);
+
+            if (this._gameHost.status == EActionStatus.ready) {
+                let command = this._actionQueqe.shift();
+                this._gameHost.applyAction(command);
+            }
+            // this._gameHost.applyAction(data);
         }
 
         private onMoveComplete() {
             console.log("事件完成!");
         }
-
-        /**
-         * 添加游戏动作
-         * */
-        pushAction(kind: EActionType, data?: any) {
-            let myData = {};
-            if (data) {
-                myData = data;
-            }
-            let action: IAction = {
-                bLock: false,
-                nKind: kind,
-                data: data,
-                start: Date.now()
-            };
-            this._actionList.push(action);
-            this.beginGameAction();
-
-            /**
-             * 1、生成动作对象
-             * 2、动作对象包含执行动作的对象、对象可以是组合对象，可以包含叶节点
-             */
-        }
-
-        
-
-        /**
-         * 执行动作队列
-         * */
-        private beginGameAction() {
-            let action = this._actionList[0];
-            if (null == action || action.bLock) {
-                console.log("%c当前动作:", "color: red; font-size: 1.5em");
-                console.log(action);
-                let now = Date.now();
-                let time = now - action.start;
-                console.log("持续时间:", time / 1000);
-                if (time > 5000) { //移除长时间动作
-                    this._actionList.splice(0, 1);
-                    this.beginGameAction();
-                }
-                return; //bLock动作锁(表示该动作正在执行)
-            }
-
-            action.bLock = true;
-
-            switch(action.nKind) {
-                case EActionType.AK_GAME_BEGIN   :{
-                    this.startGameBegin(action);
-                    break;
-                }
-                case EActionType.AK_APPEAR_TILE   :{
-                    this.startAppearTile(action);
-                    break;
-                }
-                case EActionType.AK_PIECE_MOVE    :{
-                    this.startMoveTiles(action);
-                    break;
-                }
-            }
-        }
-
-        private removeGameAction(bContinue?: boolean) {
-            let action = this._actionList[0];
-            if (null == action || !action.bLock) return;
-
-            let nkind: number = action.nKind;
-
-            switch (nkind) {
-                case EActionType.AK_GAME_BEGIN: {
-                    this.finishGameBegin(action);
-                    break;
-                }
-                case EActionType.AK_PIECE_MOVE: {
-                    this.finishMoveTile(action);
-                    break;
-                }
-            }
-
-            //移除队列
-            this._actionList.splice(0, 1);
-
-            //下一动作
-            if (bContinue == true && this._actionList.length > 0) {
-                this.beginGameAction();
-            }
-        }
-
-        private startGameBegin(action: IAction) {
-            let callBack = () => {
-                this.removeGameAction(true);
-            };
-            this._gameView && this._gameView.startGameBegin(action.data, callBack);
-        }
-
-        private finishGameBegin(action: IAction) {
-            this._gameView && this._gameView.finishGameBegin(action.data);
-        }
-
-        private startAppearTile(action: IAction) {
-            let callBack = () => {
-                this.removeGameAction(true);
-            };
-            this._gameView && this._gameView.startAppearTile(callBack);
-        }
-
-        private startMoveTiles(action: IAction) {
-            let callBack = () => {
-                this.removeGameAction(true);
-                this.pushAction(EActionType.AK_APPEAR_TILE);
-            };
-            this._gameView && this._gameView.startMoveTile(action.data, callBack);
-        }
-
-        private finishMoveTile(action) {
-            this._gameView && this._gameView.finishMoveTile(action.data);
+        onResetEngine() {
+            this._gameHost.removeEventListener(customEvent.ModelEvent.EVENT_ACTION_COMPLETE, this.actionComplete, this);
+            this._gameView.removeEventListener(customEvent.ViewEvent.EVENT_MOVE_EVENT, this.move, this);
+            manager.TimerCtrl.getInstance().killTimer(this, "gameUpdate");
         }
 
     }

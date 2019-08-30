@@ -162,6 +162,25 @@ var Main = (function (_super) {
         this.startView.addEventListener(customEvent.ViewEvent.EVENT_GAME_START, this.startGame, this);
         manager.FrameManager.getInstance().setCurrentScene(this.startView);
         // game.GameEngine.getIns().initGame();
+        // let logic = new game.GameLogic();
+        // let handle = new game.Grid(this);
+        // let grid = this.getGrid();
+        // // handle.addRandomTile();
+        // grid[0][3] = 1;
+        // grid[1][3] = 1;
+        // console.log(grid);
+        // console.log(logic.getBoard(2, grid));
+    };
+    Main.prototype.getGrid = function () {
+        var cells = [];
+        for (var n = 0; n < 5; n++) {
+            var ary = [];
+            for (var m = 0; m < 5; m++) {
+                ary.push(null);
+            }
+            cells.push(ary);
+        }
+        return cells;
     };
     Main.prototype.startGame = function () {
         this.gameView = new game.GameView();

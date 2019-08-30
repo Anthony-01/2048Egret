@@ -43,11 +43,16 @@ namespace game {
     }
 
     const C_VectorMap = {
-        0: { x: 0,  y: -1 }, // Up
-        1: { x: 1,  y: 0 },  // Right
-        2: { x: 0,  y: 1 },  // Down
-        3: { x: -1, y: 0 }   // Left
+        0: { x: -1,  y: 0 }, // Up
+        1: { x: 0,  y: 1 },  // Right
+        2: { x: 1,  y: 0 },  // Down
+        3: { x: 0, y: -1 }   // Left
     };
+
+    // 0: { x: 0,  y: -1 }, // Up
+    //     1: { x: 1,  y: 0 },  // Right
+    //     2: { x: 0,  y: 1 },  // Down
+    //     3: { x: -1, y: 0 }   // Left
 
     //build
     export interface IBuild {
@@ -71,28 +76,29 @@ namespace game {
          */
         public getBoard(actionType: EMoveDirection, grid: Array<Array<number>>): IMove[] {
             let back = [];
-            let borad = this.toBoard(grid);
-            if (borad) {
+            let board = this.toBoard(grid);
+            if (board) {
                 let vector = this.getVector(actionType);
                 let build = this.getBuild(vector);
                 //找到最边缘的棋子
-                build.x.forEach(x => {
-                    build.y.forEach(y => {
-                        let tile = borad[x][y];
-                        let next = this.getNext(x, y, borad, vector);
-                        if (tile && next) {
+                build.x.forEach(x => { //4-0
+                    build.y.forEach(y => { //0-4
+                        let tile = board[x][y];
+                        let next = this.getNext(x, y, board, vector);
+                        if (tile.value) {
+                            //方向问题，x-y方向与数组方向不同
+                            //
                             //&& tile.value == next.value && !tile.mergedFrom
                             //标记移动： egret.Point: origin goal
                             //合并标记:  tile.merge: true 被合并
                             //增量标记:  next
+                            let move: IMove
                             if (tile.value == next.value && next.mergedFrom.length == 0) {
                                 // tile.merge = true;
                                 next.value *= 2;
                                 next.mergedFrom.push(tile);
-
-                                borad[x][y] = null;
-
-                                let move: IMove = {
+                                board[x][y] = this.getInitTile(x, y, null);
+                                move = {
                                     origin: {
                                         x: tile.x,
                                         y: tile.y
@@ -104,28 +110,33 @@ namespace game {
                                     merge: true,
                                     add: true
                                 }
-                                back.push(move);
+                                // back.push(move);
                                 
                             } else {
-                                borad[x][y] = null;
+                                board[x][y] = this.getInitTile(x, y, null);
                                 let goal: IPosition = {
-                                    x: next.x + vector.x,
-                                    y: next.y + vector.y
+                                    x: next.value ? next.x - vector.x : next.x,
+                                    y: next.value ? next.y - vector.y : next.y
                                 } 
-                                borad[goal.x][goal.y] = tile;
-                                let move: IMove = {
-                                    origin: {
-                                        x: tile.x,
-                                        y: tile.y
-                                    },
-                                    goal: goal,
-                                    merge: false,
-                                    add: false
+                                if (goal.x != tile.x || goal.y != tile.y) {
+                                    
+                                    board[goal.x][goal.y] = tile;
+                                    move= {
+                                        origin: {
+                                            x: tile.x,
+                                            y: tile.y
+                                        },
+                                        goal: goal,
+                                        merge: false,
+                                        add: false
+                                    }
+                                    tile.x = goal.x;
+                                    tile.y = goal.y;
+                                    
                                 }
-                                back.push(move);
+                                
                             }
-                            
-                            
+                            move && back.push(move);
                         }
                     })
                 })
@@ -134,11 +145,28 @@ namespace game {
             
         }
 
-        private getNext(x: number, y: number, borad: Array<Array<ITile>>, vector: IVector): ITile {
-            for(let n = 1;(x + n * vector.x) < C_BOARD_MAX && (y + n * vector.y) < C_BOARD_MAX; n++) {
-                if (borad[x + n * vector.x][y + n * vector.y]) return borad[x + n * vector.x][y + n * vector.y];
+        private getNext(x: number, y: number, board: Array<Array<ITile>>, vector: IVector): ITile {
+            //(x + n * vector.x) < C_BOARD_MAX && (y + n * vector.y) < C_BOARD_MAX
+            for(let n = 1;this.withinBounds(x + n * vector.x, y + n * vector.y); n++) {
+                if (board[x + n * vector.x][y + n * vector.y].value != null) return board[x + n * vector.x][y + n * vector.y];
             }
-            return null;
+            return this.getLimit(x, y, board, vector);
+        }
+
+        //返回边界
+        private getLimit(x: number, y: number, board: Array<Array<ITile>>, vector: IVector): ITile {
+            let limitX = vector.x == 0 ? x : (vector.x == 1 ? C_BOARD_MAX - 1 : 0);
+            let limitY = vector.y == 0 ? y : (vector.y == 1 ? C_BOARD_MAX - 1 : 0);
+            return {
+                x: limitX,
+                y: limitY,
+                value: null
+            };
+        }
+
+        public withinBounds(x: number, y: number) {
+            return x >= 0 && x < SIZE &&
+                y >= 0 && y < SIZE;
         }
 
         /**
@@ -211,6 +239,16 @@ namespace game {
             } else {
                 console.error("棋盘数据错误:", grid);
                 return null;
+            }
+        }
+
+        private getInitTile(x: number, y: number, value: number): ITile {
+            return {
+                x: x,
+                y: y,
+                value: value,
+                merge: false,
+                mergedFrom: []
             }
         }
 

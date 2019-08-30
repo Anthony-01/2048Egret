@@ -28,9 +28,16 @@ namespace component {
             console.log("grid:", this._tileAry);
         }
 
+        /**
+         * 
+         * @param x 代表棋盘中的纵向坐标
+         * @param y 
+         * @param value 
+         */
         addTile(x: number, y: number, value: game.GameValue) {
             let tile = new game.Tile(x, y, value);
             this._tiles["" + x + y] = tile;
+            this.tiles["" + x + y] = tile;
             this.addChild(tile);
         }
 
@@ -322,7 +329,59 @@ namespace component {
             }
 
             // //消除以及合并
+            
+        }
 
+        //根据配置生成棋子
+        initBoard(grid: any[]) {
+
+        }
+
+        //如何根据origin中的内容找到tile
+        //1、对象形式，索引作为对象的键key，tile对应键对应的tile，需要delete，然后重新赋值
+        //2、创建一个相同的二维数组，根据键值赋予tile对象
+        private tiles: {[key: string]: game.Tile} = {};
+
+        moveTiles(move: any[]): Promise<any> {
+            let self = this;
+            return new Promise((resolve, reject) => {
+                let promiseVec = [];
+                move.forEach((data) => {
+                    let tile = this.tiles["" + data.origin.x + data.origin.y];
+                    promiseVec.push(tile.moveTo(data).then(() => {
+                        if (data.merge) {
+                            self.removeChild(tile);
+                            delete self.tiles["" + data.origin.x + data.origin.y];
+                            let goal = this.tiles["" + data.goal.x + data.goal.y];
+                            goal.gameView = goal.gameView * 2;
+                        } else {
+                            delete self.tiles["" + data.origin.x + data.origin.y];
+                            self.tiles["" + data.goal.x + data.goal.y] = tile;
+                        }
+                    }));
+                })
+                Promise.all(promiseVec).then(() => {
+                    console.log(self.tiles);
+                    resolve();
+                }).catch((err) => {
+                    console.error("棋子移动出现问题:", err);
+                })
+            })
+        }
+
+        /**
+         * 重置整个handle,包括tile的引用等
+         */
+        reset() {
+            // const form = {
+            //     id: '011',
+            //     name: '测试一',
+            //     description: '测试demo'
+            //    }
+          
+          // 目标: 取到删除description属性的对象, 即下文的data
+          //方法一:
+        //   let data = (({id, name}) =>({id, name}))(form);
         }
     }
 }

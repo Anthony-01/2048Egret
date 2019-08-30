@@ -6,9 +6,55 @@ var game;
     game.SIZE = 5;
     var Grid = (function () {
         function Grid(main, grid) {
-            this.m_main = main;
+            if (main) {
+                this.m_main = main;
+            }
             grid ? this.fromState(grid) : this.empty();
         }
+        Grid.prototype.getGrid = function () {
+            return this.cells;
+        };
+        Grid.prototype.startGame = function () {
+            this.addRandomTile();
+        };
+        Grid.prototype.addRandomTile = function () {
+            var vacancies = this.getVacancyPositions();
+            if (vacancies.length) {
+                var position = vacancies[Math.floor(Math.random() * vacancies.length)];
+                var value = Math.random() < 0.9 ? 1 : 2;
+                this.insertTile(position.x, position.y, value);
+                var tile = {
+                    x: position.x,
+                    y: position.y,
+                    value: value
+                };
+                return tile;
+            }
+            else {
+                console.log("无空位可添加棋子");
+                return null;
+            }
+        };
+        Grid.prototype.getVacancyPositions = function () {
+            var back = [];
+            //遍历整个棋盘
+            for (var n = 0; n < game.C_BOARD_MAX; n++) {
+                for (var m = 0; m < game.C_BOARD_MAX; m++) {
+                    if (this.isVacancy(n, m) == true) {
+                        back.push(new egret.Point(n, m));
+                    }
+                }
+            }
+            return back;
+        };
+        /**
+         * 是否空缺
+         * @param x
+         * @param y
+         */
+        Grid.prototype.isVacancy = function (x, y) {
+            return this.cells[x][y] == null || this.cells[x][y] == 0;
+        };
         /**
          * 根据配置文件生成棋盘
          * */
@@ -112,8 +158,6 @@ var game;
             var temp = this.cells[tile.x][tile.y];
             this.cells[tile.x][tile.y] = null;
             this.cells[cell.x][cell.y] = temp;
-            // let newCell = new egret.Point(cell.x, cell.y);
-            // tile.updatePosition(newCell);
         };
         return Grid;
     }());

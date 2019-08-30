@@ -19,6 +19,10 @@ var component;
             var _this = _super.call(this) || this;
             _this._tileAry = [];
             _this._tiles = {};
+            //如何根据origin中的内容找到tile
+            //1、对象形式，索引作为对象的键key，tile对应键对应的tile，需要delete，然后重新赋值
+            //2、创建一个相同的二维数组，根据键值赋予tile对象
+            _this.tiles = {};
             return _this;
         }
         GridHandle.prototype.init = function () {
@@ -33,9 +37,16 @@ var component;
             this.c_grid = new game.Grid(this);
             console.log("grid:", this._tileAry);
         };
+        /**
+         *
+         * @param x 代表棋盘中的纵向坐标
+         * @param y
+         * @param value
+         */
         GridHandle.prototype.addTile = function (x, y, value) {
             var tile = new game.Tile(x, y, value);
             this._tiles["" + x + y] = tile;
+            this.tiles["" + x + y] = tile;
             this.addChild(tile);
         };
         GridHandle.prototype.addRandomTile = function () {
@@ -302,6 +313,50 @@ var component;
                 }
             }
             // //消除以及合并
+        };
+        //根据配置生成棋子
+        GridHandle.prototype.initBoard = function (grid) {
+        };
+        GridHandle.prototype.moveTiles = function (move) {
+            var _this = this;
+            var self = this;
+            return new Promise(function (resolve, reject) {
+                var promiseVec = [];
+                move.forEach(function (data) {
+                    var tile = _this.tiles["" + data.origin.x + data.origin.y];
+                    promiseVec.push(tile.moveTo(data).then(function () {
+                        if (data.merge) {
+                            self.removeChild(tile);
+                            delete self.tiles["" + data.origin.x + data.origin.y];
+                            var goal = _this.tiles["" + data.goal.x + data.goal.y];
+                            goal.gameView = goal.gameView * 2;
+                        }
+                        else {
+                            delete self.tiles["" + data.origin.x + data.origin.y];
+                            self.tiles["" + data.goal.x + data.goal.y] = tile;
+                        }
+                    }));
+                });
+                Promise.all(promiseVec).then(function () {
+                    console.log(self.tiles);
+                    resolve();
+                }).catch(function (err) {
+                    console.error("棋子移动出现问题:", err);
+                });
+            });
+        };
+        /**
+         * 重置整个handle,包括tile的引用等
+         */
+        GridHandle.prototype.reset = function () {
+            // const form = {
+            //     id: '011',
+            //     name: '测试一',
+            //     description: '测试demo'
+            //    }
+            // 目标: 取到删除description属性的对象, 即下文的data
+            //方法一:
+            //   let data = (({id, name}) =>({id, name}))(form);
         };
         return GridHandle;
     }(base.BaseComponent));

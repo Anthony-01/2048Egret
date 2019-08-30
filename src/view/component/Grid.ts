@@ -1,13 +1,71 @@
 namespace game {
     export const SIZE = 5;
+    export interface ITileData {
+        x: number,
+        y: number,
+        value: GameValue
+    }
     export class Grid {
 
         public cells: any[];
         private m_main: egret.DisplayObjectContainer;
 
-        constructor(main: egret.DisplayObjectContainer, grid?: number[][]) {
-            this.m_main = main;
+        private _gameLogic: GameLogic;
+
+        constructor(main?: egret.DisplayObjectContainer, grid?: number[][]) {
+            if (main) {
+                this.m_main = main;
+            }
             grid ? this.fromState(grid) : this.empty();
+        }
+
+        public getGrid() {
+            return this.cells;
+        }
+
+        startGame() {
+            this.addRandomTile();
+        }
+
+        addRandomTile() {
+            let vacancies = this.getVacancyPositions();
+            if (vacancies.length) {
+                let position = vacancies[Math.floor(Math.random() * vacancies.length)];
+                let value = Math.random() < 0.9 ? 1 : 2;
+                this.insertTile(position.x, position.y, value);
+                let tile: ITileData = {
+                    x: position.x,
+                    y: position.y,
+                    value: value
+                }
+                return tile;
+            } else {
+                console.log("无空位可添加棋子");
+                return null;
+            }
+        }
+
+        private getVacancyPositions() {
+            let back: egret.Point[] = [];
+            //遍历整个棋盘
+            for (let n = 0; n < C_BOARD_MAX; n++) {
+                for (let m = 0; m < C_BOARD_MAX; m++) {
+                    if (this.isVacancy(n, m) == true) {
+                        back.push(new egret.Point(n, m));
+                    }
+                }
+            }
+
+            return back;
+        }
+
+        /**
+         * 是否空缺
+         * @param x 
+         * @param y 
+         */
+        private isVacancy(x: number, y: number): boolean {
+            return this.cells[x][y] == null || this.cells[x][y] == 0;
         }
 
 
@@ -137,8 +195,6 @@ namespace game {
             let temp = this.cells[tile.x][tile.y];
             this.cells[tile.x][tile.y] = null;
             this.cells[cell.x][cell.y] = temp;
-            // let newCell = new egret.Point(cell.x, cell.y);
-            // tile.updatePosition(newCell);
         }
     }
 }

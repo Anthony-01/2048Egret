@@ -5,14 +5,15 @@ var game;
 (function (game) {
     var EActionType;
     (function (EActionType) {
-        EActionType[EActionType["move"] = 0] = "move";
+        EActionType[EActionType["start"] = 0] = "start";
+        EActionType[EActionType["move"] = 1] = "move";
     })(EActionType = game.EActionType || (game.EActionType = {}));
     var EMoveDirection;
     (function (EMoveDirection) {
         EMoveDirection[EMoveDirection["up"] = 0] = "up";
-        EMoveDirection[EMoveDirection["down"] = 1] = "down";
-        EMoveDirection[EMoveDirection["left"] = 2] = "left";
-        EMoveDirection[EMoveDirection["right"] = 3] = "right";
+        EMoveDirection[EMoveDirection["right"] = 1] = "right";
+        EMoveDirection[EMoveDirection["down"] = 2] = "down";
+        EMoveDirection[EMoveDirection["left"] = 3] = "left";
     })(EMoveDirection = game.EMoveDirection || (game.EMoveDirection = {}));
     var ActionCommand = (function () {
         /**
@@ -20,8 +21,9 @@ var game;
          * @param component 执行动作的对象
          */
         function ActionCommand(component, callBack, params) {
-            this.clientList = {};
-            this.objList = {};
+            // private clientList: {[name:string] : Array<Function>} = {};
+            // private objList: {[name:string] : Array<any>} = {};
+            this.mapList = {};
             this._component = component;
             this._callBack = callBack;
             this._params = params;
@@ -42,29 +44,66 @@ var game;
         ActionCommand.prototype.undo = function () {
             //返回到旧值
         };
+        // 发射事件
         ActionCommand.prototype.trigger = function (key) {
             var ary = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 ary[_i - 1] = arguments[_i];
             }
-            if (!this.clientList[key])
+            if (!this.mapList[key])
                 return false;
-            var fns = this.clientList[key];
-            var objs = this.objList[key];
-            for (var n = 0, fn = void 0, obj = void 0; n < fns.length; n++) {
-                fn = fns[n];
-                obj = objs[n];
+            // let fns = this.clientList[key];
+            // let objs = this.objList[key];
+            var map = this.mapList[key];
+            for (var n = 0, fn = void 0, obj = void 0; n < map.length; n++) {
+                fn = map[n].fn;
+                obj = map[n].obj;
                 fn.apply.apply(fn, [obj].concat(ary));
             }
+            // for (let n = 0, fn, obj; n < fns.length; n++) {
+            //     fn = fns[n];
+            //     obj = objs[n];
+            //     fn.apply(obj, ...ary);
+            // }
         };
         ActionCommand.prototype.addListener = function (key, fn, obj) {
             //记录游戏对象
-            if (!this.clientList[key]) {
-                this.clientList[key] = [];
-                this.objList[key] = [];
+            if (!this.mapList[key]) {
+                // this.clientList[key] = [];
+                // this.objList[key] = [];
+                this.mapList[key] = [];
             }
-            this.clientList[key].push(fn);
-            this.objList[key].push(obj);
+            var map = {
+                fn: fn,
+                obj: obj
+            };
+            var index = this.mapList[key].indexOf(map);
+            if (index != -1)
+                return console.error("重复监听");
+            this.mapList[key].push(map);
+            // this.clientList[key].push(fn);
+            // this.objList[key].push(obj);
+        };
+        ActionCommand.prototype.removeListener = function (key, fn, obj) {
+            var map = {
+                fn: fn,
+                obj: obj
+            };
+            var num;
+            if (this.mapList[key]) {
+                this.mapList[key].forEach(function (value, index) {
+                    if (value.fn == map.fn && value.obj == map.obj) {
+                        num = index;
+                    }
+                });
+            }
+            // let index = this.mapList[key].indexOf(map);
+            if (num !== undefined) {
+                this.mapList[key].splice(num, 1);
+            }
+            else {
+                return console.error("移除不存在的监听");
+            }
         };
         ActionCommand.EVENT_COMPLETE = "eventComplete";
         return ActionCommand;
